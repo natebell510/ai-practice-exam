@@ -45,6 +45,36 @@
       border-radius: 40px;
       letter-spacing: 0.3px;
     }
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .live-stats {
+      display: flex;
+      gap: 20px;
+      background: #f8fafd;
+      padding: 8px 24px;
+      border-radius: 60px;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+    .stat-correct {
+      color: #158463;
+    }
+    .stat-incorrect {
+      color: #c9354b;
+    }
+    .stat-unanswered {
+      color: #6f7f99;
+    }
     .progress-row {
       display: flex;
       flex-wrap: wrap;
@@ -366,9 +396,27 @@
     <small>AIF-C01 · 100 Q&A</small>
   </h1>
 
+  <!-- Live statistics header (always visible) -->
+  <div class="stats-header">
+    <div class="live-stats">
+      <div class="stat-item">
+        <span class="dot correct"></span>
+        <span class="stat-correct" id="liveCorrect">0</span> correct
+      </div>
+      <div class="stat-item">
+        <span class="dot wrong"></span>
+        <span class="stat-incorrect" id="liveIncorrect">0</span> incorrect
+      </div>
+      <div class="stat-item">
+        <span class="dot skipped"></span>
+        <span class="stat-unanswered" id="liveUnanswered">100</span> left
+      </div>
+    </div>
+    <span class="badge" id="counterDisplay">Q1 / 100</span>
+  </div>
+
   <!-- progress + navigation -->
   <div class="progress-row">
-    <span class="badge" id="counterDisplay">Q1 / 100</span>
     <div class="nav-buttons">
       <button class="nav-btn" id="prevBtn" disabled>← Previous</button>
       <button class="nav-btn" id="nextBtn">Next →</button>
@@ -773,6 +821,7 @@
   const total = questionsData.length;
   const userAnswers = new Array(total).fill(null);       // stores selected option index (or null)
   const revealed = new Array(total).fill(false);          // whether explanation is shown
+  const answerStatus = new Array(total).fill(null);       // 'correct', 'incorrect', or null
 
   const qNumLabel = document.getElementById('qNumLabel');
   const qText = document.getElementById('qText');
@@ -791,6 +840,39 @@
   const wrongCountSpan = document.getElementById('wrongCount');
   const unansweredCountSpan = document.getElementById('unansweredCount');
   const retryBtn = document.getElementById('retryBtn');
+  
+  // Live stats elements
+  const liveCorrect = document.getElementById('liveCorrect');
+  const liveIncorrect = document.getElementById('liveIncorrect');
+  const liveUnanswered = document.getElementById('liveUnanswered');
+
+  function updateLiveStats() {
+    let correct = 0, incorrect = 0;
+    for (let i = 0; i < total; i++) {
+      if (answerStatus[i] === 'correct') correct++;
+      else if (answerStatus[i] === 'incorrect') incorrect++;
+    }
+    const unanswered = total - correct - incorrect;
+    
+    liveCorrect.textContent = correct;
+    liveIncorrect.textContent = incorrect;
+    liveUnanswered.textContent = unanswered;
+  }
+
+  function evaluateCurrentAnswer() {
+    const q = questionsData[currentIdx];
+    const ans = userAnswers[currentIdx];
+    if (ans === null) {
+      answerStatus[currentIdx] = null;
+    } else {
+      if (Array.isArray(q.correct)) {
+        answerStatus[currentIdx] = q.correct.includes(ans) ? 'correct' : 'incorrect';
+      } else {
+        answerStatus[currentIdx] = ans === q.correct ? 'correct' : 'incorrect';
+      }
+    }
+    updateLiveStats();
+  }
 
   function renderQuestion() {
     const q = questionsData[currentIdx];
@@ -815,6 +897,7 @@
         if (revealed[currentIdx]) return;   // can't change after reveal
         const idx = parseInt(optDiv.dataset.optIndex);
         userAnswers[currentIdx] = idx;
+        evaluateCurrentAnswer();
         renderQuestion();  // re-render to update 'selected' class
       });
     });
@@ -835,7 +918,7 @@
 
   function showExplanationForCurrent() {
     const q = questionsData[currentIdx];
-    const correctIdx = Array.isArray(q.correct) ? q.correct[0] : q.correct; // for multi, show first (but display text)
+    const correctIdx = Array.isArray(q.correct) ? q.correct[0] : q.correct;
     let answerLetter = String.fromCharCode(65 + correctIdx);
     if (Array.isArray(q.correct) && q.correct.length > 1) {
       answerLetter = q.correct.map(i => String.fromCharCode(65 + i)).join(', ');
@@ -867,6 +950,8 @@
     }
     revealed[currentIdx] = true;
     showExplanationForCurrent();
+    evaluateCurrentAnswer();
+    
     // after revealing, check if all questions are answered => compute score
     if (revealed.every(v => v === true)) {
       computeAndShowScore();
@@ -876,17 +961,10 @@
   function computeAndShowScore() {
     let correct = 0, wrong = 0;
     for (let i = 0; i < total; i++) {
-      if (!revealed[i]) continue; // not answered? treat as unanswered (won't happen here)
-      const q = questionsData[i];
-      const ans = userAnswers[i];
-      if (ans === null) continue; // shouldn't happen
-      if (Array.isArray(q.correct)) {
-        if (q.correct.includes(ans)) correct++; else wrong++;
-      } else {
-        if (ans === q.correct) correct++; else wrong++;
-      }
+      if (answerStatus[i] === 'correct') correct++;
+      else if (answerStatus[i] === 'incorrect') wrong++;
     }
-    const unanswered = total - (correct + wrong);
+    const unanswered = total - correct - wrong;
     finalScore.innerText = correct;
     correctCountSpan.innerText = correct;
     wrongCountSpan.innerText = wrong;
@@ -897,6 +975,8 @@
   resetQuestionBtn.addEventListener('click', () => {
     userAnswers[currentIdx] = null;
     revealed[currentIdx] = false;
+    answerStatus[currentIdx] = null;
+    evaluateCurrentAnswer();
     renderQuestion();
     scorePanel.hidden = true;
   });
@@ -919,13 +999,17 @@
     for (let i = 0; i < total; i++) {
       userAnswers[i] = null;
       revealed[i] = false;
+      answerStatus[i] = null;
     }
     currentIdx = 0;
+    evaluateCurrentAnswer();
     renderQuestion();
     scorePanel.hidden = true;
   });
 
+  // Initial render and stats update
   renderQuestion();
+  updateLiveStats();
 })();
 </script>
 </body>
