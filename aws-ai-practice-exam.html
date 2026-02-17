@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS AI Practitioner · Exam practice (100 Q)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background: #f1f4f9;
+      margin: 0;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .app-wrapper {
+      max-width: 1000px;
+      width: 100%;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      padding: 28px 24px 40px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 0.25rem;
+      color: #0f1a2f;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    h1 small {
+      font-size: 1rem;
+      font-weight: 400;
+      background: #e6edf5;
+      color: #1e3a6b;
+      padding: 6px 16px;
+      border-radius: 40px;
+      letter-spacing: 0.3px;
+    }
+    .progress-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 20px;
+      background: #f8fafd;
+      padding: 12px 18px;
+      border-radius: 60px;
+    }
+    .badge {
+      background: #1e3a6b;
+      color: white;
+      border-radius: 40px;
+      padding: 6px 18px;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .nav-btn {
+      background: white;
+      border: 1px solid #ccdae8;
+      border-radius: 40px;
+      padding: 8px 16px;
+      font-weight: 500;
+      color: #1e3a6b;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: #e2ebf6;
+      border-color: #a0b8d0;
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .question-panel {
+      border: 1px solid #e2eaf2;
+      border-radius: 32px;
+      padding: 30px 30px 20px;
+      background: #ffffff;
+      margin: 10px 0 24px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+    }
+    .q-num {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #5275a0;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .q-text {
+      font-size: 1.4rem;
+      font-weight: 500;
+      line-height: 1.4;
+      margin: 0 0 28px 0;
+      color: #0a1a2c;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: #f9fcff;
+      border: 1.5px solid #dbe4ed;
+      border-radius: 20px;
+      padding: 16px 22px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .option:hover {
+      background: #f1f7fe;
+      border-color: #a0bbd9;
+    }
+    .option.selected {
+      background: #e5effb;
+      border-color: #1e5f9e;
+      box-shadow: 0 0 0 1px #1e5f9e;
+    }
+    .option.correct-highlight {
+      background: #e0f2e8;
+      border-color: #158463;
+    }
+    .option.wrong-highlight {
+      background: #ffe8eb;
+      border-color: #c9354b;
+    }
+    .option-letter {
+      font-weight: 700;
+      background: white;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid #c6d6e8;
+      color: #1e3a6b;
+      flex-shrink: 0;
+    }
+    .option.selected .option-letter {
+      background: #1e5f9e;
+      border-color: #1e5f9e;
+      color: white;
+    }
+    .option-content {
+      flex: 1;
+      font-size: 1.1rem;
+      line-height: 1.4;
+      color: #1a2b3e;
+    }
+    .explanation-box {
+      background: #f0f5fb;
+      border-radius: 24px;
+      padding: 20px 26px;
+      margin-top: 20px;
+      border-left: 6px solid #1e5f9e;
+    }
+    .explanation-box strong {
+      color: #0f3b6f;
+      font-size: 1.1rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .explanation-box p {
+      margin: 6px 0;
+      color: #1e3a5f;
+    }
+    .correct-badge {
+      background: #158463;
+      color: white;
+      font-weight: 600;
+      padding: 4px 16px;
+      border-radius: 30px;
+      display: inline-block;
+      font-size: 0.9rem;
+    }
+    .action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin: 30px 0 10px;
+      gap: 16px;
+    }
+    .btn {
+      background: white;
+      border: 1px solid #b6cae0;
+      border-radius: 60px;
+      padding: 12px 28px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1e3a6b;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary {
+      background: #1e3a6b;
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(30,58,107,0.25);
+    }
+    .btn-primary:hover {
+      background: #143157;
+    }
+    .btn:active {
+      scale: 0.97;
+    }
+    .stats-panel {
+      background: #e9f0f9;
+      border-radius: 28px;
+      padding: 24px 28px;
+      margin: 28px 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .score-box {
+      background: white;
+      border-radius: 40px;
+      padding: 16px 32px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .score-number {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #1e3a6b;
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.95rem;
+      color: #48638c;
+    }
+    .donut-wrap {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .legend {
+      display: flex;
+      gap: 24px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 8px;
+    }
+    .dot.correct { background: #158463; }
+    .dot.wrong { background: #c9354b; }
+    .dot.skipped { background: #a5b9cf; }
+    .retry-btn {
+      background: transparent;
+      border: 2px solid #1e3a6b;
+      color: #1e3a6b;
+      font-weight: 600;
+      padding: 12px 36px;
+      border-radius: 40px;
+      cursor: pointer;
+    }
+    /* Disclaimer section styling */
+    .disclaimer-section {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: #f8fafd;
+      border-radius: 28px;
+      border: 1px solid #dae3ef;
+      font-size: 0.95rem;
+    }
+    .disclaimer-title {
+      font-weight: 700;
+      color: #1e3a6b;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .disclaimer-title span {
+      background: #1e3a6b;
+      color: white;
+      padding: 2px 10px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+    }
+    .disclaimer-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      color: #2c405e;
+    }
+    .disclaimer-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px dashed #cddae9;
+    }
+    .disclaimer-row:last-child {
+      border-bottom: none;
+    }
+    .disclaimer-icon {
+      font-size: 1.3rem;
+      min-width: 36px;
+      text-align: center;
+    }
+    .disclaimer-text {
+      line-height: 1.5;
+    }
+    .disclaimer-text strong {
+      color: #0f3b6f;
+    }
+    .credit-badge {
+      background: #e2ebf6;
+      border-radius: 40px;
+      padding: 8px 18px;
+      display: inline-block;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+    .footer-note {
+      text-align: center;
+      margin-top: 24px;
+      color: #6f7f99;
+      font-size: 0.9rem;
+    }
+    hr {
+      border: none;
+      border-top: 2px dashed #cddae9;
+      margin: 28px 0 10px;
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="app-wrapper" id="app">
+  <h1>
+    ☁️ AWS AI Practitioner
+    <small>AIF-C01 · 100 Q&A</small>
+  </h1>
+
+  <!-- progress + navigation -->
+  <div class="progress-row">
+    <span class="badge" id="counterDisplay">Q1 / 100</span>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="prevBtn" disabled>← Previous</button>
+      <button class="nav-btn" id="nextBtn">Next →</button>
+    </div>
+  </div>
+
+  <!-- main question card -->
+  <div class="question-panel" id="questionPanel">
+    <div class="q-num" id="qNumLabel">Question 1</div>
+    <div class="q-text" id="qText">Loading questions...</div>
+    <div class="options" id="optionsContainer"></div>
+    <div id="explanationBox" class="explanation-box" hidden>
+      <strong>✅ correct answer</strong>
+      <p id="correctAnswerLetter"></p>
+      <p id="explanationText"></p>
+    </div>
+  </div>
+
+  <!-- action buttons (check / reset per question) -->
+  <div class="action-bar">
+    <button class="btn" id="checkBtn">✓ Check answer</button>
+    <button class="btn" id="resetQuestionBtn">↺ Reset this question</button>
+  </div>
+
+  <!-- final score panel (hidden until all answered) -->
+  <div id="scorePanel" class="stats-panel" hidden>
+    <div class="donut-wrap">
+      <div class="score-box">
+        <span class="score-number" id="finalScore">0</span>
+        <span class="score-label"> / 100</span>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><span class="dot correct"></span> <span id="correctCount">0</span> correct</div>
+        <div class="legend-item"><span class="dot wrong"></span> <span id="wrongCount">0</span> wrong</div>
+        <div class="legend-item"><span class="dot skipped"></span> <span id="unansweredCount">100</span> unanswered</div>
+      </div>
+    </div>
+    <button class="retry-btn" id="retryBtn">⟲ Retry exam</button>
+  </div>
+
+  <!-- ========== LEGAL DISCLAIMER & CREDIT SECTION ========== -->
+  <div class="disclaimer-section">
+    <div class="disclaimer-title">
+      ⚖️ Important Legal Information
+      <span>FREE TO USE</span>
+    </div>
+    <div class="disclaimer-content">
+      <div class="disclaimer-row">
+        <div class="disclaimer-icon">🔹</div>
+        <div class="disclaimer-text">
+          <strong>Independent Study Tool</strong> — This interactive exam is an independent, 
+          unofficial practice resource created for educational purposes only. It is not affiliated with, 
+          endorsed by, or in any way officially connected to Amazon Web Services (AWS) or any of its subsidiaries.
+        </div>
+      </div>
+      <div class="disclaimer-row">
+        <div class="disclaimer-icon">💰</div>
+        <div class="disclaimer-text">
+          <strong>Completely Free</strong> — This tool is provided free of charge. No payment, 
+          registration, or subscription is required to access or use this practice exam. 
+          It may not be sold, sublicensed, or used for any commercial purpose.
+        </div>
+      </div>
+      <div class="disclaimer-row">
+        <div class="disclaimer-icon">📚</div>
+        <div class="disclaimer-text">
+          <strong>Source Credit</strong> — The questions and explanations are based on 
+          "AWS AI Practitioner - Questions 2025 v1.10" curated by 
+          <strong>Artem Polynko</strong>. Original content compiled for study purposes; 
+          this interactive format is a derivative work intended to aid exam preparation.
+        </div>
+      </div>
+      <div class="disclaimer-row">
+        <div class="disclaimer-icon">📋</div>
+        <div class="disclaimer-text">
+          <strong>Trademarks</strong> — AWS, Amazon Web Services, and all related logos and 
+          certification names are trademarks of Amazon Technologies, Inc. or its affiliates. 
+          Their use here is for identification purposes only and does not imply endorsement.
+        </div>
+      </div>
+    </div>
+    <div class="credit-badge">
+      ⭐ Questions by Artem Polynko · Interactive version by community
+    </div>
+  </div>
+
+  <hr>
+  <div class="footer-note">
+    ✦ Select an option, click "Check answer" to see explanation. All 100 questions from the guide.
+    <br>📢 Share freely — this is and always will be a free learning resource.
+  </div>
+</div>
+
+<script>
+(function(){
+  // ----- data embedded from the provided file (exactly 100 items) -----
+  const questionsData = [
+    { q: "Which AWS service allows you to build, train, and deploy custom machine learning models at scale?",
+      options: ["A) Amazon Lex","B) Amazon Bedrock","C) Amazon SageMaker","D) AWS Lambda"],
+      correct: 2, explanation: "SageMaker is AWS’s end-to-end ML platform for building, training, and deploying custom models." },
+    { q: "Which of the following best describes unsupervised learning?",
+      options: ["A) Predicting numeric values using labeled data","B) Identifying patterns or clusters in unlabeled data","C) Using rewards and penalties to train an agent","D) Applying labeled data to train a model"],
+      correct: 1, explanation: "Unsupervised learning finds structure in data without labeled outputs." },
+    { q: "A retail company wants to summarize customer reviews. Which AWS service is best suited for this task?",
+      options: ["A) Amazon Rekognition","B) Amazon Comprehend","C) Amazon Translate","D) Amazon Polly"],
+      correct: 1, explanation: "Comprehend can perform NLP tasks like sentiment analysis and summarization." },
+    { q: "What is one advantage of using Retrieval-Augmented Generation (RAG) with a foundation model?",
+      options: ["A) Reduces latency by skipping the model altogether","B) Improves prediction speed by pruning the model","C) Provides up-to-date, context-specific answers using external data","D) Decreases API cost by caching prompt results"],
+      correct: 2, explanation: "RAG enhances foundation models by retrieving relevant documents before generating responses." },
+    { q: "Which type of model training is used to specialize a foundation model for a specific task or dataset?",
+      options: ["A) Pre-training","B) Prompt chaining","C) Fine-tuning","D) Embedding"],
+      correct: 2, explanation: "Fine-tuning adapts a pre-trained model to new tasks using labeled domain-specific data." },
+    { q: "Which AWS service provides access to foundation models like Claude, Jurassic, or Titan via API without managing infrastructure?",
+      options: ["A) Amazon SageMaker","B) Amazon Kendra","C) Amazon Bedrock","D) AWS Lambda"],
+      correct: 2, explanation: "Bedrock provides fully managed API access to multiple foundation models." },
+    { q: "In the context of AI, what is 'bias' most accurately defined as?",
+      options: ["A) An overuse of GPU resources during training","B) A measure of model complexity","C) Systematic error that unfairly influences model outcomes","D) A type of deep learning optimization"],
+      correct: 2, explanation: "Bias in AI typically refers to unintended, unfair impacts on decisions." },
+    { q: "Which service would help you build a multilingual chatbot with speech recognition?",
+      options: ["A) Amazon Translate + Amazon Comprehend","B) Amazon Polly + Amazon Rekognition","C) Amazon Lex + Amazon Transcribe","D) Amazon SageMaker + Amazon Textract"],
+      correct: 2, explanation: "Lex handles chatbot logic; Transcribe converts speech to text." },
+    { q: "Which AWS service helps generate speech from text, useful for voice-enabled applications?",
+      options: ["A) Amazon Polly","B) Amazon Transcribe","C) Amazon Lex","D) Amazon Q"],
+      correct: 0, explanation: "Polly converts text to speech in lifelike voices." },
+    { q: "What is a 'token' in the context of large language models?",
+      options: ["A) A multi-factor authentication method","B) A pre-processed image input","C) A segment of text used during model inference","D) An access credential for invoking APIs"],
+      correct: 2, explanation: "Tokens are subunits of text (words, subwords) processed by LLMs." },
+    { q: "Which AWS service can help identify personal information like credit card numbers or names in a training dataset stored in Amazon S3?",
+      options: ["A) AWS IAM","B) Amazon Macie","C) Amazon Textract","D) AWS CloudTrail"],
+      correct: 1, explanation: "Macie detects and classifies sensitive data in S3, such as PII." },
+    { q: "What is the purpose of SageMaker Clarify?",
+      options: ["A) Launching endpoint servers for foundation models","B) Evaluating model speed and GPU usage","C) Identifying bias and explaining model predictions","D) Serving prompts to Amazon Bedrock"],
+      correct: 2, explanation: "SageMaker Clarify supports fairness and explainability through metrics and SHAP values." },
+    { q: "A developer needs a vector database to store text embeddings for semantic search. Which AWS service is most appropriate?",
+      options: ["A) Amazon DynamoDB","B) Amazon DocumentDB","C) Amazon OpenSearch with k-NN","D) Amazon Polly"],
+      correct: 2, explanation: "OpenSearch supports vector search for embeddings using k-Nearest Neighbors." },
+    { q: "Which of the following is a common risk of generative AI in production?",
+      options: ["A) Deployment via HTTPS","B) High recall","C) Model hallucination","D) Insufficient GPU logging"],
+      correct: 2, explanation: "A common risk where the model outputs plausible but false or made-up content." },
+    { q: "What is the primary role of Amazon Lex in AI-powered applications?",
+      options: ["A) Sentiment analysis","B) Speech synthesis","C) Building conversational interfaces and chatbots","D) Object detection"],
+      correct: 2, explanation: "Lex provides voice/text-based interfaces powered by NLP." },
+    { q: "What type of prompting helps models reason more clearly by breaking tasks into logical steps?",
+      options: ["A) Zero-shot prompting","B) Prompt chaining","C) Chain-of-thought prompting","D) Embedding prompting"],
+      correct: 2, explanation: "Helps improve reasoning by guiding the model step-by-step." },
+    { q: "Which AWS service allows a user to catalog, govern, and manage AI-related datasets?",
+      options: ["A) Amazon DataZone","B) Amazon Inspector","C) Amazon S3","D) AWS Artifact"],
+      correct: 0, explanation: "DataZone enables cataloging, governance, and sharing of data assets across teams." },
+    { q: "What is a model card in SageMaker used for?",
+      options: ["A) Encrypting model input/output","B) Documenting model use, data, metrics, and ethical considerations","C) Launching auto-scaling endpoints","D) Selecting the correct foundation model from Amazon Bedrock"],
+      correct: 1, explanation: "Model cards improve transparency and compliance by summarizing key model details." },
+    { q: "Which AWS service helps with identifying and logging all API activity related to your AI infrastructure?",
+      options: ["A) Amazon Macie","B) AWS Config","C) AWS CloudTrail","D) Amazon Inspector"],
+      correct: 2, explanation: "Tracks all API actions across your AWS account, including those for AI services." },
+    { q: "Which AWS tool helps ensure that only approved users and roles can access an Amazon Bedrock model endpoint?",
+      options: ["A) AWS KMS","B) AWS IAM","C) Amazon Polly","D) Amazon Route 53"],
+      correct: 1, explanation: "IAM controls access and permissions for Bedrock, SageMaker, and all AWS resources." },
+    { q: "A user needs to generate multiple image variations from a single text prompt. Which type of model would be best for this task?",
+      options: ["A) Recurrent neural network","B) Diffusion model","C) Transformer model","D) Logistic regression"],
+      correct: 1, explanation: "Diffusion models generate high-quality images from noise guided by text prompts." },
+    { q: "Which AWS service helps convert handwritten forms into structured digital data?",
+      options: ["A) Amazon Textract","B) Amazon Polly","C) Amazon Lex","D) AWS Glue"],
+      correct: 0, explanation: "Textract extracts text and structure (like tables, forms) from scanned documents." },
+    { q: "In a generative AI application, which AWS service provides no-code tools to experiment with foundation models?",
+      options: ["A) Amazon Q","B) Amazon Bedrock Studio","C) Amazon PartyRock","D) AWS Lambda"],
+      correct: 2, explanation: "PartyRock allows users to experiment with Bedrock-hosted models via a no-code interface." },
+    { q: "Which of the following is a benefit of using AWS-managed foundation models instead of training your own?",
+      options: ["A) Requires more infrastructure setup","B) Lower initial compute costs and faster time-to-value","C) Allows unlimited control of the model’s internal layers","D) Offers higher hallucination risk due to limited access"],
+      correct: 1, explanation: "Managed models save cost and time since training and infra are already done by AWS." },
+    { q: "Which metric is best suited to evaluate the quality of machine translation output?",
+      options: ["A) ROUGE","B) BLEU","C) AUC","D) F1 Score"],
+      correct: 1, explanation: "BLEU evaluates translation accuracy based on n-gram overlap with reference text." },
+    { q: "What is one major benefit of in-context learning over fine-tuning?",
+      options: ["A) It updates the model’s weights for new tasks","B) It costs less and doesn’t require retraining","C) It guarantees higher accuracy","D) It allows GPU scaling"],
+      correct: 1, explanation: "In-context learning uses well-structured prompts without changing the model itself." },
+    { q: "A machine learning model performs well on training data but poorly on new data. What is the most likely issue?",
+      options: ["A) Underfitting","B) Data drift","C) Overfitting","D) High bias"],
+      correct: 2, explanation: "Overfitting happens when a model learns training data too well but fails to generalize." },
+    { q: "What is the purpose of Amazon SageMaker Feature Store?",
+      options: ["A) Manage IAM roles for training jobs","B) Store structured logs for model performance","C) Serve consistent features for training and inference","D) Replace Glue for visual data transformation"],
+      correct: 2, explanation: "Feature Store provides a centralized source for ML features used in both stages." },
+    { q: "What is a key feature of the AWS Shared Responsibility Model as it applies to AI workloads?",
+      options: ["A) AWS is responsible for securing custom model code","B) Customers are responsible for physical data center access","C) AWS secures the infrastructure, customers secure configurations and data","D) Customers rely on AWS to guarantee model explainability"],
+      correct: 2, explanation: "The Shared Responsibility Model splits infra vs user responsibilities." },
+    { q: "Which AWS tool enables human reviewers to verify low-confidence model predictions before results are finalized?",
+      options: ["A) Amazon Lex","B) Amazon A2I","C) AWS Macie","D) Amazon Q"],
+      correct: 1, explanation: "A2I (Augmented AI) lets humans review ML outputs before they are accepted." },
+    { q: "Which AWS service would you use to translate chatbot messages from English to Spanish in real-time?",
+      options: ["A) Amazon Comprehend","B) Amazon Polly","C) Amazon Translate","D) Amazon Lex"],
+      correct: 2, explanation: "Translate provides real-time, high-quality language translation." },
+    { q: "What is the main advantage of using Amazon SageMaker JumpStart for a new AI project?",
+      options: ["A) It provides serverless access to third-party models.","B) It allows full model interpretability by default.","C) It offers pre-built models and solutions for quick deployment.","D) It replaces the need for IAM roles in ML workflows."],
+      correct: 2, explanation: "JumpStart accelerates AI adoption by providing ready-to-use templates and models." },
+    { q: "Which method is commonly used to measure the similarity between user input and stored content in a vector database?",
+      options: ["A) Hash matching","B) k-Nearest Neighbors (k-NN)","C) Confusion matrix","D) ROC curve"],
+      correct: 1, explanation: "Vector search compares embeddings using k-NN for similarity ranking." },
+    { q: "What is an embedding in the context of AI and vector databases?",
+      options: ["A) A label used for supervised learning","B) A data format used for model deployment","C) A dense vector representing the meaning of data","D) A specific GPU setting for SageMaker endpoints"],
+      correct: 2, explanation: "Embeddings convert text/images into vectors for comparison and semantic search." },
+    { q: "A model always predicts the majority class but fails to detect rare cases. What metric is most likely misleading in this case?",
+      options: ["A) Precision","B) F1 Score","C) Accuracy","D) Recall"],
+      correct: 2, explanation: "High accuracy can be misleading when rare classes are missed (i.e., imbalanced data)." },
+    { q: "What is the purpose of using SHAP values in model evaluation?",
+      options: ["A) To encrypt data before inference","B) To calculate how each feature impacts a model's output","C) To standardize tokenization of inputs","D) To classify model bias as legal or illegal"],
+      correct: 1, explanation: "SHAP values explain model predictions by showing feature contribution." },
+    { q: "Which AWS service supports storing AI model outputs securely with version control and access logging?",
+      options: ["A) AWS Lambda","B) AWS Glue","C) Amazon S3","D) AWS CloudTrail"],
+      correct: 2, explanation: "S3 securely stores data, including models and logs, with versioning and access control." },
+    { q: "What does Amazon Rekognition primarily analyze?",
+      options: ["A) Document structure","B) Audio waveforms","C) Image and video content","D) Token-based language prompts"],
+      correct: 2, explanation: "Rekognition detects labels, faces, and unsafe content in media." },
+    { q: "How does Amazon Q for Business support enterprise AI use cases?",
+      options: ["A) By running real-time image recognition","B) By providing GPU acceleration for model training","C) By answering natural language questions using internal company data","D) By launching distributed training jobs on SageMaker"],
+      correct: 2, explanation: "Amazon Q for Business is designed for internal Q&A across enterprise documents." },
+    { q: "Which of the following defines prompt injection in generative AI applications?",
+      options: ["A) Feeding the model with missing values","B) Tricking the model into executing unintended behavior via crafted input","C) Replacing GPU memory during inference","D) Automatically chaining model outputs to data pipelines"],
+      correct: 1, explanation: "Prompt injection exploits LLMs by injecting commands that override the intended prompt." },
+    { q: "Which AWS service can automate data transformations and prep for machine learning with a visual interface?",
+      options: ["A) AWS Glue DataBrew","B) Amazon S3","C) Amazon Q","D) Amazon Polly"],
+      correct: 0, explanation: "DataBrew lets users visually transform, clean, and prepare data for ML without code." },
+    { q: "What is the purpose of a system prompt in a generative AI application?",
+      options: ["A) To define the format of the output","B) To provide instructions that guide the model’s role or behavior","C) To set GPU configuration","D) To compress the input tokens"],
+      correct: 1, explanation: "System prompts establish tone, behavior, and rules for the AI’s responses." },
+    { q: "Which AWS service would help detect data drift or anomalies in live model input and predictions?",
+      options: ["A) Amazon Rekognition","B) SageMaker Model Monitor","C) AWS Config","D) Amazon Kendra"],
+      correct: 1, explanation: "Model Monitor tracks model inputs and outputs for drift, helping detect issues post-deployment." },
+    { q: "An organization wants to classify documents by language and topic. Which combination of services is best?",
+      options: ["A) Amazon Polly and Amazon Textract","B) Amazon Translate and Amazon S3","C) Amazon Comprehend and Amazon S3","D) Amazon Bedrock and Amazon Q"],
+      correct: 2, explanation: "Comprehend analyzes text for language and topic classification; S3 stores the documents." },
+    { q: "Which type of model evaluation metric is most suitable for summarization tasks?",
+      options: ["A) ROUGE","B) BLEU","C) Perplexity","D) MAE"],
+      correct: 0, explanation: "ROUGE compares overlaps between generated and reference summaries." },
+    { q: "How does Amazon Bedrock simplify access to foundation models?",
+      options: ["A) It auto-trains any model uploaded by the user","B) It hosts open-source models in SageMaker endpoints","C) It provides API access to multiple foundation models without managing infrastructure","D) It requires a local container environment for use"],
+      correct: 2, explanation: "Bedrock is a managed service that provides simple access to FMs from various providers." },
+    { q: "What is the purpose of a vector database in Retrieval-Augmented Generation (RAG)?",
+      options: ["A) To reduce training time by compressing models","B) To generate GPU-friendly model files","C) To store embeddings and enable similarity search for grounding responses","D) To support IAM token storage"],
+      correct: 2, explanation: "Vector databases hold embeddings to support retrieval in RAG workflows." },
+    { q: "Which AWS tool enables ongoing audit tracking and policy alignment for AI projects?",
+      options: ["A) Amazon Q","B) AWS Artifact","C) AWS Audit Manager","D) Amazon Comprehend"],
+      correct: 2, explanation: "Audit Manager helps you map and maintain compliance controls for audit readiness." },
+    { q: "What is the main purpose of Amazon Titan in the AWS AI ecosystem?",
+      options: ["A) It offers containerized GPU inference for local deployments","B) It’s AWS’s proprietary foundation model family, accessible via Bedrock","C) It provides OCR and handwriting recognition","D) It’s an Amazon robotics platform for automation"],
+      correct: 1, explanation: "Titan models support generative AI use cases and are natively integrated with Bedrock." },
+    { q: "In what situation would using human-in-the-loop (via Amazon A2I) be most appropriate?",
+      options: ["A) To store model parameters in S3","B) When model outputs must be verified for accuracy before release","C) When you want to increase token limits in Bedrock","D) To convert speech to text"],
+      correct: 1, explanation: "Amazon A2I allows for human intervention to validate or correct AI results." },
+    { q: "What is the benefit of using Amazon SageMaker Studio for AI development?",
+      options: ["A) It replaces IAM permissions","B) It offers a browser-based IDE with integrated ML tools","C) It automatically generates prompts for Bedrock","D) It converts images to embeddings"],
+      correct: 1, explanation: "SageMaker Studio centralizes data science workflows with Jupyter notebooks and built-in tools." },
+    { q: "Which AWS service would best support training and deploying a machine learning model with custom Python code?",
+      options: ["A) Amazon Lex","B) Amazon SageMaker","C) Amazon Translate","D) Amazon Polly"],
+      correct: 1, explanation: "SageMaker supports bringing your own code and containers for ML model training and deployment." },
+    { q: "A company wants to track changes in model performance over time. What AWS service helps with this?",
+      options: ["A) Amazon Textract","B) SageMaker Model Monitor","C) Amazon Lex","D) Amazon Transcribe"],
+      correct: 1, explanation: "Tracks prediction quality and input distribution over time to identify drift or degradation." },
+    { q: "Which of the following AWS services provides an interface to manage and govern data shared across teams?",
+      options: ["A) AWS IAM","B) Amazon Macie","C) Amazon DataZone","D) Amazon Translate"],
+      correct: 2, explanation: "DataZone supports cataloging, sharing, and governance of datasets across teams." },
+    { q: "What is the main benefit of using Amazon Comprehend’s custom classification feature?",
+      options: ["A) It allows training of vision models on image datasets","B) It enables model quantization for faster inference","C) It lets you categorize documents based on your own business labels","D) It encrypts output summaries for compliance"],
+      correct: 2, explanation: "Comprehend custom classification lets you train a classifier on your own label taxonomy." },
+    { q: "Which of the following best defines 'zero-shot prompting'?",
+      options: ["A) The model is fine-tuned before inference","B) The model answers a task without seeing any examples","C) The model is prompted after receiving labeled training data","D) The prompt contains multiple few-shot examples"],
+      correct: 1, explanation: "Zero-shot prompting relies on pretrained capabilities and instructions alone." },
+    { q: "What is a major advantage of using Amazon Q (Business) over a general LLM interface?",
+      options: ["A) It supports GPU-based training workloads","B) It automatically clusters training data","C) It grounds answers in enterprise documents and internal knowledge","D) It supports image classification natively"],
+      correct: 2, explanation: "Amazon Q uses RAG to answer based on your company's data." },
+    { q: "Which AWS service provides a knowledge base-backed AI chatbot using Bedrock models and RAG?",
+      options: ["A) Amazon Lex","B) Amazon Rekognition","C) Amazon Q","D) Amazon S3"],
+      correct: 2, explanation: "Q integrates Bedrock models with internal data sources for grounded, enterprise chat." },
+    { q: "A security team wants to ensure AI data in S3 is encrypted at rest. Which AWS service helps manage encryption keys?",
+      options: ["A) Amazon A2I","B) AWS Artifact","C) AWS KMS","D) Amazon Bedrock"],
+      correct: 2, explanation: "Key Management Service handles encryption key creation, storage, and access." },
+    { q: "What is the benefit of using Guardrails in Amazon Bedrock?",
+      options: ["A) To detect and prevent drift in training pipelines","B) To convert structured data into image format","C) To restrict harmful, unsafe, or non-compliant model outputs","D) To perform live speech translation"],
+      correct: 2, explanation: "Bedrock Guardrails filter and control generative model responses based on safety rules." },
+    { q: "Which AWS service is specifically designed to help build, test, and deploy AI solutions using an end-to-end managed environment?",
+      options: ["A) Amazon Textract","B) Amazon Q","C) Amazon SageMaker","D) AWS Lambda"],
+      correct: 2, explanation: "SageMaker provides a complete ML platform for model building, training, and deployment." },
+    { q: "What is the main reason organizations use Retrieval-Augmented Generation (RAG) instead of relying only on a foundation model’s internal knowledge?",
+      options: ["A) It reduces GPU power requirements","B) It improves model explainability","C) It enables grounding in up-to-date or proprietary information","D) It increases BLEU score in translation tasks"],
+      correct: 2, explanation: "RAG lets the model reference external documents for current or custom data." },
+    { q: "In a classification model, which metric is most useful when trying to reduce false negatives in rare event detection?",
+      options: ["A) Accuracy","B) Recall","C) BLEU","D) MAE"],
+      correct: 1, explanation: "Recall focuses on capturing true positives — critical when false negatives are costly." },
+    { q: "What does a model card typically include? (Choose TWO.)",
+      options: ["A) GPU utilization metrics","B) Intended use cases","C) Dataset details and sources","D) Token cost per query"],
+      correct: 1, explanation: "Model cards document purpose, data origin, performance, and limitations. (B and C)", multi: [1,2] },
+    { q: "Which AWS service helps prevent unauthorized access to AI endpoints by controlling permissions?",
+      options: ["A) AWS IAM","B) Amazon Translate","C) Amazon Polly","D) Amazon CloudWatch"],
+      correct: 0, explanation: "IAM enforces fine-grained access control to AI resources like Bedrock endpoints." },
+    { q: "What is one reason to use prompt engineering instead of fine-tuning?",
+      options: ["A) It reduces latency","B) It allows reuse of the same model without additional training","C) It guarantees full explainability","D) It converts model outputs into tokens"],
+      correct: 1, explanation: "Prompt engineering lets you tailor outputs with no retraining or cost overhead." },
+    { q: "Which AWS service is best suited for real-time speech-to-text transcription?",
+      options: ["A) Amazon Transcribe","B) Amazon Lex","C) Amazon Polly","D) Amazon Kendra"],
+      correct: 0, explanation: "Transcribe converts live or recorded speech into accurate text." },
+    { q: "A team wants to perform image analysis, including detecting objects and facial attributes. Which service should they use?",
+      options: ["A) Amazon Bedrock","B) Amazon Comprehend","C) Amazon Rekognition","D) Amazon A2I"],
+      correct: 2, explanation: "Rekognition analyzes images and videos for faces, objects, and text." },
+    { q: "What is the main risk of not monitoring model inputs after deployment?",
+      options: ["A) GPU underuse","B) Increased training cost","C) Input drift leading to degraded model performance","D) Longer prompt tokenization"],
+      correct: 2, explanation: "If input data shifts from what the model was trained on, accuracy may drop." },
+    { q: "What AWS feature supports safe handling of sensitive prompts and outputs in generative AI applications?",
+      options: ["A) SageMaker Model Cards","B) Amazon Macie","C) Bedrock Guardrails","D) AWS CodeCommit"],
+      correct: 2, explanation: "Guardrails help filter and manage prompts and outputs for compliance and safety." },
+    { q: "What AWS service enables access to pre-trained models from Anthropic, Stability AI, and AI21 Labs?",
+      options: ["A) Amazon SageMaker","B) Amazon Bedrock","C) Amazon Comprehend","D) Amazon EC2"],
+      correct: 1, explanation: "Bedrock provides access to foundation models from multiple providers via API." },
+    { q: "What is a foundational concept of human-centered design in AI systems?",
+      options: ["A) Reducing memory usage in training","B) Prioritizing GPU acceleration","C) Explaining outputs in a way users can understand","D) Minimizing vector database usage"],
+      correct: 2, explanation: "Human-centered design emphasizes clarity, trust, and user comprehension." },
+    { q: "Which AWS service is primarily used to manage machine learning features and avoid duplication between training and inference?",
+      options: ["A) AWS Glue","B) Amazon S3","C) SageMaker Feature Store","D) Amazon Lex"],
+      correct: 2, explanation: "Stores and serves features consistently across ML pipelines." },
+    { q: "An organization wants to control how long ML data is retained and ensure deletion after a specific period. Which feature helps?",
+      options: ["A) S3 Bucket Lifecycle Policies","B) Amazon Lex intents","C) AWS Lambda","D) SageMaker model tuning"],
+      correct: 0, explanation: "These automate data archiving and deletion for governance and compliance." },
+    { q: "What is the purpose of Amazon A2I in AI workflows?",
+      options: ["A) Create multi-modal embeddings for large models","B) Allow human review of low-confidence or sensitive ML predictions","C) Accelerate foundation model training","D) Detect personally identifiable information in documents"],
+      correct: 1, explanation: "A2I adds human-in-the-loop validation to critical model decisions." },
+    { q: "What does BLEU score evaluate in NLP tasks?",
+      options: ["A) Output tone","B) Model inference time","C) Translation accuracy based on reference overlap","D) Ethical use of AI"],
+      correct: 2, explanation: "BLEU measures how closely machine translation matches a human reference." },
+    { q: "Which AWS service provides compliance documentation (e.g., SOC, ISO certifications)?",
+      options: ["A) AWS CloudTrail","B) AWS Artifact","C) Amazon Rekognition","D) Amazon S3"],
+      correct: 1, explanation: "Provides downloadable compliance and security documents." },
+    { q: "A financial company wants to trace which dataset was used to train a particular ML model. Which governance tool supports this need?",
+      options: ["A) Amazon Polly","B) Amazon Translate","C) Model Cards","D) Amazon Kendra"],
+      correct: 2, explanation: "Document model inputs, training data, use cases, and limitations." },
+    { q: "What is latent space in the context of foundation models?",
+      options: ["A) A model’s reserved memory area","B) A range of GPU utilization values","C) A compressed internal representation of features or concepts","D) A multi-user chat interface for AI responses"],
+      correct: 2, explanation: "Foundation models use latent space to understand and relate input data." },
+    { q: "Which AWS service would best support a chatbot that needs to understand spoken commands and reply with generated speech?",
+      options: ["A) Amazon Textract","B) Amazon Q","C) Amazon Transcribe + Amazon Polly","D) Amazon Comprehend + Amazon S3"],
+      correct: 2, explanation: "Transcribe converts speech to text; Polly converts generated replies into audio." },
+    { q: "Which AWS service helps you define custom vocabulary and language models for speech recognition tasks?",
+      options: ["A) Amazon Translate","B) Amazon Polly","C) Amazon Transcribe","D) Amazon Kendra"],
+      correct: 2, explanation: "Transcribe supports custom vocabularies and language models for tailored speech recognition." },
+    { q: "What does the Shared Responsibility Model mean in the context of AWS AI services?",
+      options: ["A) AWS and users co-own model weights","B) AWS handles physical security; users manage data, configuration, and access","C) AWS manages all aspects of AI, including ethics","D) Users only manage billing and logs"],
+      correct: 1, explanation: "The Shared Responsibility Model divides control between AWS (infra) and the customer (data, permissions, models)." },
+    { q: "Which tool would help a company detect bias in both datasets and model predictions?",
+      options: ["A) Amazon Comprehend","B) SageMaker Clarify","C) AWS Glue","D) Amazon Bedrock"],
+      correct: 1, explanation: "Clarify detects bias and provides SHAP-based explainability during and after training." },
+    { q: "Why might an organization use continuous pretraining with foundation models?",
+      options: ["A) To delete unused tokens","B) To keep the model updated with recent data","C) To reset model weights","D) To avoid needing GPUs"],
+      correct: 1, explanation: "Continuous pretraining extends a model’s knowledge beyond its original training cutoff." },
+    { q: "What is the function of instruction tuning in foundation models?",
+      options: ["A) Adjusts latency parameters","B) Teaches the model to better follow user commands","C) Converts binary to text","D) Optimizes GPU memory"],
+      correct: 1, explanation: "Instruction tuning helps models learn to respond well to prompts phrased as instructions." },
+    { q: "Which AWS service supports chunking text input and adding grounding context for large prompts?",
+      options: ["A) Amazon Lex","B) Amazon Comprehend","C) Amazon Bedrock","D) AWS Lambda"],
+      correct: 2, explanation: "Bedrock supports prompt engineering, chunking, and RAG for grounding context." },
+    { q: "Which term best describes the risk of a model memorizing and reproducing training data verbatim?",
+      options: ["A) Overfitting","B) Latency","C) Prompt injection","D) Token duplication"],
+      correct: 0, explanation: "Overfitting can cause models to memorize training data instead of generalizing." },
+    { q: "An AI assistant produces different responses each time for the same prompt. What parameter is likely causing this?",
+      options: ["A) Accuracy","B) Recall","C) Temperature","D) Latency"],
+      correct: 2, explanation: "Higher temperature adds randomness to model output, affecting determinism." },
+    { q: "In responsible AI development, what is one purpose of using model explainability tools?",
+      options: ["A) To reduce GPU usage","B) To measure token frequency","C) To help understand feature impact on model predictions","D) To optimize latency in real-time endpoints"],
+      correct: 2, explanation: "Explainability helps interpret why the model made a certain prediction." },
+    { q: "A company needs to prevent public access to its SageMaker inference endpoints. What should it use?",
+      options: ["A) Public API Gateway","B) Amazon Macie","C) AWS PrivateLink","D) Amazon Polly"],
+      correct: 2, explanation: "PrivateLink allows private, VPC-internal access to SageMaker and Bedrock endpoints." },
+    { q: "What is the role of Amazon Kendra in a Retrieval-Augmented Generation (RAG) pipeline?",
+      options: ["A) Train a new foundation model from scratch","B) Manage cloud cost for AI pipelines","C) Retrieve relevant documents or passages from a data source","D) Generate embeddings from images"],
+      correct: 2, explanation: "Kendra is used to search and retrieve documents based on semantic or keyword relevance." },
+    { q: "Which of the following is a typical component of a RAG system on AWS? (Choose TWO.)",
+      options: ["A) Amazon Bedrock","B) Amazon Textract","C) Amazon OpenSearch","D) AWS CodePipeline"],
+      correct: 2, explanation: "Bedrock provides the generative model; OpenSearch stores embeddings for vector search in RAG. (A and C)", multi: [0,2] },
+    { q: "What AWS service provides a no-code interface for creating apps powered by Bedrock foundation models?",
+      options: ["A) Amazon Rekognition","B) Amazon Lex","C) Amazon Q","D) Amazon PartyRock"],
+      correct: 3, explanation: "PartyRock is a no-code app builder that uses Bedrock models to build generative AI apps." },
+    { q: "What type of learning uses labeled input-output pairs to train a model?",
+      options: ["A) Reinforcement learning","B) Supervised learning","C) Unsupervised learning","D) Federated learning"],
+      correct: 1, explanation: "Supervised learning uses labeled input-output pairs to learn mappings." },
+    { q: "Which AWS service allows users to transcribe streaming audio with speaker identification?",
+      options: ["A) Amazon Polly","B) Amazon Transcribe","C) Amazon Comprehend","D) Amazon SageMaker"],
+      correct: 1, explanation: "Transcribe can transcribe speech with features like speaker identification and vocabulary filtering." },
+    { q: "Why would an AI team use AWS Config in an ML pipeline?",
+      options: ["A) To build no-code AI assistants","B) To validate prompts for Bedrock","C) To monitor compliance of infrastructure configurations","D) To perform model hyperparameter tuning"],
+      correct: 2, explanation: "AWS Config tracks configuration changes and compliance of AWS resources." },
+    { q: "Which type of bias occurs when the training dataset does not represent the target population?",
+      options: ["A) Algorithmic bias","B) Data drift","C) Sampling bias","D) Tuning bias"],
+      correct: 2, explanation: "Sampling bias arises when the training data does not represent the broader population." },
+    { q: "What is one limitation of few-shot prompting compared to fine-tuning?",
+      options: ["A) It requires GPU access","B) It needs a full labeled dataset","C) It has limited task-specific learning retention","D) It supports only classification models"],
+      correct: 2, explanation: "Few-shot prompting is flexible but doesn’t permanently adapt the model like fine-tuning." },
+    { q: "A company needs to host a multilingual question-answering chatbot using proprietary documentation. Which combination is best?",
+      options: ["A) Amazon Translate + Amazon S3","B) Amazon Kendra + Amazon Bedrock","C) Amazon Polly + AWS Lambda","D) AWS Glue + Amazon SageMaker"],
+      correct: 1, explanation: "Kendra retrieves relevant data, Bedrock generates grounded responses using that context." },
+    { q: "Which AWS service allows teams to detect and redact sensitive data from documents or text inputs before model training?",
+      options: ["A) Amazon Bedrock","B) Amazon Rekognition","C) Amazon Macie","D) Amazon Comprehend"],
+      correct: 2, explanation: "Macie scans for sensitive data (like PII) and helps with redaction and classification." }
+  ];
+
+  // ----- state management -----
+  let currentIdx = 0;                // 0‑based
+  const total = questionsData.length;
+  const userAnswers = new Array(total).fill(null);       // stores selected option index (or null)
+  const revealed = new Array(total).fill(false);          // whether explanation is shown
+
+  const qNumLabel = document.getElementById('qNumLabel');
+  const qText = document.getElementById('qText');
+  const optionsDiv = document.getElementById('optionsContainer');
+  const explanationBox = document.getElementById('explanationBox');
+  const correctAnswerLetterSpan = document.getElementById('correctAnswerLetter');
+  const explanationText = document.getElementById('explanationText');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counterDisplay = document.getElementById('counterDisplay');
+  const checkBtn = document.getElementById('checkBtn');
+  const resetQuestionBtn = document.getElementById('resetQuestionBtn');
+  const scorePanel = document.getElementById('scorePanel');
+  const finalScore = document.getElementById('finalScore');
+  const correctCountSpan = document.getElementById('correctCount');
+  const wrongCountSpan = document.getElementById('wrongCount');
+  const unansweredCountSpan = document.getElementById('unansweredCount');
+  const retryBtn = document.getElementById('retryBtn');
+
+  function renderQuestion() {
+    const q = questionsData[currentIdx];
+    qNumLabel.innerText = `Question ${currentIdx+1}`;
+    qText.innerText = q.q;
+    // build options
+    let htmlStr = '';
+    q.options.forEach((opt, idx) => {
+      const selectedClass = (userAnswers[currentIdx] === idx) ? 'selected' : '';
+      htmlStr += `
+        <div class="option ${selectedClass}" data-opt-index="${idx}">
+          <span class="option-letter">${String.fromCharCode(65+idx)}</span>
+          <span class="option-content">${opt}</span>
+        </div>
+      `;
+    });
+    optionsDiv.innerHTML = htmlStr;
+
+    // attach click listeners to options
+    document.querySelectorAll('.option').forEach(optDiv => {
+      optDiv.addEventListener('click', (e) => {
+        if (revealed[currentIdx]) return;   // can't change after reveal
+        const idx = parseInt(optDiv.dataset.optIndex);
+        userAnswers[currentIdx] = idx;
+        renderQuestion();  // re-render to update 'selected' class
+      });
+    });
+
+    // show explanation if already revealed
+    if (revealed[currentIdx]) {
+      showExplanationForCurrent();
+    } else {
+      explanationBox.hidden = true;
+    }
+
+    // update counter
+    counterDisplay.innerText = `Q${currentIdx+1} / ${total}`;
+    // prev/next buttons state
+    prevBtn.disabled = (currentIdx === 0);
+    nextBtn.disabled = (currentIdx === total-1);
+  }
+
+  function showExplanationForCurrent() {
+    const q = questionsData[currentIdx];
+    const correctIdx = Array.isArray(q.correct) ? q.correct[0] : q.correct; // for multi, show first (but display text)
+    let answerLetter = String.fromCharCode(65 + correctIdx);
+    if (Array.isArray(q.correct) && q.correct.length > 1) {
+      answerLetter = q.correct.map(i => String.fromCharCode(65 + i)).join(', ');
+    }
+    correctAnswerLetterSpan.innerHTML = `<span class="correct-badge">Correct: ${answerLetter}</span>`;
+    explanationText.innerText = q.explanation;
+    explanationBox.hidden = false;
+
+    // highlight correct/wrong on options (visual feedback)
+    document.querySelectorAll('.option').forEach(optDiv => {
+      const idx = parseInt(optDiv.dataset.optIndex);
+      optDiv.classList.remove('correct-highlight','wrong-highlight');
+      if (Array.isArray(q.correct)) {
+        if (q.correct.includes(idx)) optDiv.classList.add('correct-highlight');
+        else if (userAnswers[currentIdx] === idx && !q.correct.includes(idx)) optDiv.classList.add('wrong-highlight');
+      } else {
+        if (idx === q.correct) optDiv.classList.add('correct-highlight');
+        else if (userAnswers[currentIdx] === idx && idx !== q.correct) optDiv.classList.add('wrong-highlight');
+      }
+    });
+  }
+
+  // check button
+  checkBtn.addEventListener('click', () => {
+    if (revealed[currentIdx]) return;
+    if (userAnswers[currentIdx] === null) {
+      alert('Please select an option first.');
+      return;
+    }
+    revealed[currentIdx] = true;
+    showExplanationForCurrent();
+    // after revealing, check if all questions are answered => compute score
+    if (revealed.every(v => v === true)) {
+      computeAndShowScore();
+    }
+  });
+
+  function computeAndShowScore() {
+    let correct = 0, wrong = 0;
+    for (let i = 0; i < total; i++) {
+      if (!revealed[i]) continue; // not answered? treat as unanswered (won't happen here)
+      const q = questionsData[i];
+      const ans = userAnswers[i];
+      if (ans === null) continue; // shouldn't happen
+      if (Array.isArray(q.correct)) {
+        if (q.correct.includes(ans)) correct++; else wrong++;
+      } else {
+        if (ans === q.correct) correct++; else wrong++;
+      }
+    }
+    const unanswered = total - (correct + wrong);
+    finalScore.innerText = correct;
+    correctCountSpan.innerText = correct;
+    wrongCountSpan.innerText = wrong;
+    unansweredCountSpan.innerText = unanswered;
+    scorePanel.hidden = false;
+  }
+
+  resetQuestionBtn.addEventListener('click', () => {
+    userAnswers[currentIdx] = null;
+    revealed[currentIdx] = false;
+    renderQuestion();
+    scorePanel.hidden = true;
+  });
+
+  prevBtn.addEventListener('click', () => {
+    if (currentIdx > 0) {
+      currentIdx--;
+      renderQuestion();
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (currentIdx < total-1) {
+      currentIdx++;
+      renderQuestion();
+    }
+  });
+
+  retryBtn.addEventListener('click', () => {
+    for (let i = 0; i < total; i++) {
+      userAnswers[i] = null;
+      revealed[i] = false;
+    }
+    currentIdx = 0;
+    renderQuestion();
+    scorePanel.hidden = true;
+  });
+
+  renderQuestion();
+})();
+</script>
+</body>
+</html>
