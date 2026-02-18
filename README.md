@@ -1,9 +1,8 @@
 # AWS AI Practitioner Exam Practice
 
-An interactive practice exam for the AWS Certified AI Practitioner (AIF-C01) certification. This tool contains 100 practice questions with answers and explanations to help you prepare for the exam.
+An interactive practice exam for the AWS Certified AI Practitioner (AIF-C01) certification. This tool contains practice questions with answers and explanations to help you prepare for the exam.
 
 ## Features
-- ✅ 100 practice questions covering all exam domains
 - ✅ Interactive multiple-choice interface
 - ✅ Instant feedback with correct/incorrect highlighting
 - ✅ Detailed explanations for each answer
@@ -16,7 +15,7 @@ An interactive practice exam for the AWS Certified AI Practitioner (AIF-C01) cer
 2. Open it in any web browser
 3. Select answers and click "Check answer" for feedback
 4. Navigate using Previous/Next buttons
-5. Complete all 100 questions to see your final score
+5. Complete all questions to see your final score
 
 ## ⚖️ Important Legal Information
 
