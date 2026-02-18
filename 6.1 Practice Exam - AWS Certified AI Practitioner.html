@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz</title>
+    <style>
+      * {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+
+      main {
+        padding-top: 48px;
+      }
+
+      :root {
+        --large-device-width: 850px;
+        --primary-color: #0f172a;
+        --secondary-color: #020617;
+        --primary-text-color: #c7d1dd;
+        --secondary-text-color: #061602;
+        --success-background: hsl(159, 82%, 24%);
+        --success-foreground: hsl(164, 86%, 16%);
+        --success: hsl(160, 84%, 39%);
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info-background: hsl(218, 81%, 8%);
+        --info-foreground: hsl(217, 91%, 85%);
+        --border-color: #d1d7dc;
+        --check-box-size: 20px;
+        /* control the size */
+        --check-box-color: var(--info-foreground);
+        /* the active color */
+      }
+
+      body {
+        position: relative;
+        background-color: #020617;
+        color: var(--primary-text-color);
+      }
+
+      #score-stats-container {
+        position: fixed;
+        z-index: 10;
+        top: 0;
+        height: 40px;
+        width: 100%;
+        background-color: var(--info-background);
+
+        padding: 0px 16px;
+        color: var(--info-foreground);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      #quiz-container {
+        border-radius: 8px;
+        display: flex;
+        gap: 16px;
+        flex-direction: column;
+      }
+
+      input[type='radio'] {
+        height: var(--check-box-size);
+        aspect-ratio: 1;
+        border: calc(var(--check-box-size) / 8) solid #939393;
+        padding: calc(var(--check-box-size) / 8);
+        background: radial-gradient(farthest-side, var(--check-box-color) 94%, #0000) 50%/0 0 no-repeat
+          content-box;
+        border-radius: 50%;
+        outline-offset: calc(var(--check-box-size) / 10);
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
+        font-size: inherit;
+        transition: 0.3s;
+      }
+
+      input[type='radio']:checked {
+        border-color: var(--check-box-color);
+        background-size: 100% 100%;
+      }
+
+      input[type='radio']:disabled {
+        background: linear-gradient(#939393 0 0) 50%/100% 20% no-repeat content-box;
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      label {
+        /* display: inline-flex; */
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 4px;
+      }
+
+      @media (max-width: 767px) {
+        input[type='radio'],
+        label {
+          cursor: default;
+        }
+
+        #quiz-container {
+          margin-left: 8px;
+          margin-right: 8px;
+        }
+      }
+
+      /* PC (Desktop devices) */
+      @media (min-width: 768px) {
+        body {
+          display: flex;
+          justify-content: center;
+        }
+
+        main {
+          max-width: var(--large-device-width);
+        }
+
+        #score-stats-container {
+          max-width: var(--large-device-width);
+        }
+
+        dialog {
+          max-width: var(--large-device-width);
+        }
+      }
+
+      @media print {
+        input[type='radio'] {
+          background: none !important;
+          border-color: #939393 !important;
+        }
+
+        input[type='radio']:checked {
+          border-color: #939393 !important;
+        }
+      }
+
+      .question-lable {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        outline: none;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .button {
+        background-color: var(--success-background);
+        border: none;
+        color: #f4f5f7;
+        opacity: 0.8;
+        font-size: 18px;
+        flex-grow: 1;
+        padding: 8px 16px;
+        border-radius: 8px;
+      }
+
+      .button:hover {
+        opacity: 1;
+      }
+
+      .explanation-btn {
+        border: none;
+        color: var(--success);
+        background-color: transparent;
+      }
+
+      #submit-button:active::after {
+        background-color: #ef4444;
+      }
+
+      .single-question-container {
+        background-color: var(--primary-color);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        border-radius: 8px;
+      }
+
+      #modal-content {
+        padding: 16px;
+        line-height: 24px;
+      }
+
+      dialog::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      dialog {
+        position: fixed;
+        border: 1px solid var(--border-color);
+        background-color: var(--primary-color);
+        color: rgb(240, 241, 248);
+        padding: 16px;
+        border-radius: 8px;
+        width: 80vw;
+        max-height: 80vh;
+        overflow: auto;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translateX(-50%) translateY(-50%);
+        -moz-transform: translateX(-50%) translateY(-50%);
+        -ms-transform: translateX(-50%) translateY(-50%);
+        transform: translateX(-50%) translateY(-50%);
+      }
+
+      #close-modal-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        padding: 2px 8px;
+        border-radius: 2px;
+        border: none;
+        background-color: var(--danger);
+      }
+
+      .correct-answer label {
+        border: 2px solid var(--success);
+        width: 100%;
+      }
+
+      .incorrect-answer label {
+        border: 2px solid var(--danger);
+        width: 100%;
+      }
+
+      .options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      #quiz-meta-container {
+        border-radius: 8px;
+        background-color: var(--primary-color);
+        margin-bottom: 12px;
+        padding: 8px;
+      }
+
+      #quiz-title {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      #quiz-description {
+        line-height: 1.5;
+        padding: 2px 6px;
+      }
+      img {
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body onload="main()">
+    <main>
+      <section id="quiz-meta-container">
+        <h1 id="quiz-title"></h1>
+        <p id="quiz-description"></p>
+      </section>
+      <section id="score-stats-container">
+        <div id="score-card">
+          Score: <span id="current-score">999</span> of
+          <span id="pass-percent">999%</span>
+        </div>
+        <div>Correct: <span id="correct-answers">999</span></div>
+        <div>Incorrect: <span id="wrong-answers">999</span></div>
+      </section>
+
+      <section id="quiz-container"></section>
+
+      <dialog id="modal" class="modal-container">
+        <div id="modal-content">
+          <p id="modal-text"></p>
+        </div>
+      </dialog>
+    </main>
+
+    <script>
+      const quizData = {"quiz_id":6463763,"quiz_title":"Practice Exam - AWS Certified AI Practitioner","questions":[{"_class":"assessment","id":95107861,"assessment_type":"multi-select","prompt":{"question":"<p>As a developer specializing in Large Language Models (LLMs) at a technology company, you have been tasked with migrating the company’s AI infrastructure to AWS Cloud to support the development of LLM-based solutions for various applications, such as natural language processing, text generation, and chatbots. The company is looking for AWS services that offer robust support for training, deploying, and managing LLMs while ensuring scalability, security, and integration with other cloud services.</p>\n\n<p>Which AWS services would you recommend for developing LLM-based solutions in this environment? (Select two)</p>\n","relatedLectureIds":"","feedbacks":["","","","",""],"explanation":"<p>Correct options:</p>\n\n<p>Large language models (LLM) are very large deep learning models that are pre-trained on vast amounts of data. The underlying transformer is a set of neural networks that consist of an encoder and a decoder with self-attention capabilities. The encoder and decoder extract meanings from a sequence of text and understand the relationships between words and phrases in it.</p>\n\n<p>Large language models (LLMs) are one class of Foundation Models. For example, OpenAI's generative pre-trained transformer (GPT) models are LLMs. LLMs are specifically focused on language-based tasks such as such as summarization, text generation, classification, open-ended conversation, and information extraction.</p>\n\n<p>AWS recommends AWS Bedrock and Amazon SageMaker JumpStart as the best-fit services for developing LLM based solutions.</p>\n\n<p><strong>Amazon Bedrock</strong></p>\n\n<p>Amazon Bedrock is the easiest way to build and scale generative AI applications with foundation models. Amazon Bedrock is a fully managed service that makes foundation models from Amazon and leading AI startups available through an API, so you can choose from various FMs to find the model that's best suited for your use case. With Bedrock, you can speed up developing and deploying scalable, reliable, and secure generative AI applications without managing infrastructure.</p>\n\n<p><strong>Amazon SageMaker JumpStart</strong></p>\n\n<p>Amazon SageMaker JumpStart is a machine learning hub with foundation models, built-in algorithms, and prebuilt ML solutions that you can deploy with just a few clicks. With SageMaker JumpStart, you can access pre-trained models, including foundation models, to perform tasks like article summarization and image generation. Pretrained models are fully customizable for your use case with your data, and you can easily deploy them into production with the user interface or SDK.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Amazon Q</strong> - Amazon Q is a generative AI–powered assistant for accelerating software development and leveraging companies' internal data. Amazon Q generates code, tests, and debugs. It has multistep planning and reasoning capabilities that can transform and implement new code generated from developer requests.</p>\n\n<p><strong>AWS Trainium</strong> - AWS Trainium is the machine learning (ML) chip that AWS purpose-built for deep learning (DL) training of 100B+ parameter models. Each Amazon Elastic Compute Cloud (Amazon EC2) Trn1 instance deploys up to 16 Trainium accelerators to deliver a high-performance, low-cost solution for DL training in the cloud.</p>\n\n<p><strong>AWS Inferentia</strong> - AWS Inferentia is an ML chip purpose-built by AWS to deliver high-performance inference at a low cost. AWS Inferentia accelerators are designed by AWS to deliver high performance at the lowest cost in Amazon EC2 for your deep learning (DL) and generative AI inference applications.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/what-is/large-language-model/\">https://aws.amazon.com/what-is/large-language-model/</a></p>\n\n<p><a href=\"https://aws.amazon.com/bedrock/\">https://aws.amazon.com/bedrock/</a></p>\n\n<p><a href=\"https://aws.amazon.com/sagemaker/jumpstart/\">https://aws.amazon.com/sagemaker/jumpstart/</a></p>\n\n<p><a href=\"https://aws.amazon.com/q/\">https://aws.amazon.com/q/</a></p>\n\n<p><a href=\"https://aws.amazon.com/machine-learning/trainium/\">https://aws.amazon.com/machine-learning/trainium/</a></p>\n","answers":["<p>Amazon Bedrock</p>","<p>Amazon SageMaker JumpStart</p>","<p>AWS Trainium</p>","<p>Amazon Q</p>","<p>AWS Inferentia</p>"]},"correct_response":["a","b"],"section":"Fundamentals of Generative AI","question_plain":"As a developer specializing in Large Language Models (LLMs) at a technology company, you have been tasked with migrating the company’s AI infrastructure to AWS Cloud to support the development of LLM-based solutions for various applications, such as natural language processing, text generation, and chatbots. The company is looking for AWS services that offer robust support for training, deploying, and managing LLMs while ensuring scalability, security, and integration with other cloud services.\n\nWhich AWS services would you recommend for developing LLM-based solutions in this environment? (Select two)","related_lectures":[]},{"_class":"assessment","id":95107879,"assessment_type":"multiple-choice","prompt":{"question":"<p>A legal research firm is seeking to implement a cutting-edge AI solution that can generate detailed responses to complex legal queries by retrieving relevant information from their extensive database of legal documents. The company wants to use Amazon Bedrock to deploy a fully managed solution that supports an end-to-end Retrieval Augmented Generation (RAG) workflow, ensuring that the AI can pull contextually accurate information and generate high-quality answers efficiently.</p>\n\n<p>What solution or approach would you recommend for implementing fully managed support for a RAG workflow in Amazon Bedrock?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Knowledge Bases for Amazon Bedrock</strong></p>\n\n<p>With Knowledge Bases for Amazon Bedrock, you can give FMs and agents contextual information from your company’s private data sources for RAG to deliver more relevant, accurate, and customized responses</p>\n\n<p>Knowledge Bases for Amazon Bedrock takes care of the entire ingestion workflow of converting your documents into embeddings (vector) and storing the embeddings in a specialized vector database. Knowledge Bases for Amazon Bedrock supports popular databases for vector storage, including vector engine for Amazon OpenSearch Serverless, Pinecone, Redis Enterprise Cloud, Amazon Aurora (coming soon), and MongoDB (coming soon). If you do not have an existing vector database, Amazon Bedrock creates an OpenSearch Serverless vector store for you.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt1-q9-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/bedrock/knowledge-bases/\">https://aws.amazon.com/bedrock/knowledge-bases/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Watermark detection for Amazon Bedrock</strong> -  The watermark detection mechanism allows you to identify images generated by Amazon Titan Image Generator, a foundation model that allows users to create realistic, studio-quality images in large volumes and at low cost, using natural language prompts. With watermark detection, you can increase transparency around AI-generated content by mitigating harmful content generation and reducing the spread of misinformation. You cannot use a watermark detection mechanism to implement RAG workflow in Amazon Bedrock.</p>\n\n<p><strong>Continued pretraining in Amazon Bedrock</strong> - In the continued pretraining process, you provide unlabeled data to pre-train a model by familiarizing it with certain types of inputs. You can provide data from specific topics to expose a model to those areas. The continued pretraining process will tweak the model parameters to accommodate the input data and improve its domain knowledge. You can use <code>continued pretraining</code> or <code>fine-tuning</code> for model customization in Amazon Bedrock. You cannot use continued pretraining to implement RAG workflow in Amazon Bedrock.</p>\n\n<p><strong>Guardrails for Amazon Bedrock</strong> - Guardrails for Amazon Bedrock help you implement safeguards for your generative AI applications based on your use cases and responsible AI policies. It helps control the interaction between users and FMs by filtering undesirable and harmful content, redacts personally identifiable information (PII), and enhances content safety and privacy in generative AI applications. You cannot use guardrails to implement RAG workflow in Amazon Bedrock.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/bedrock/faqs/\">https://aws.amazon.com/bedrock/faqs/</a></p>\n\n<p><a href=\"https://aws.amazon.com/bedrock/knowledge-bases/\">https://aws.amazon.com/bedrock/knowledge-bases/</a></p>\n\n<p><a href=\"https://aws.amazon.com/about-aws/whats-new/2024/04/watermark-detection-amazon-titan-image-generator-bedrock/\">https://aws.amazon.com/about-aws/whats-new/2024/04/watermark-detection-amazon-titan-image-generator-bedrock/</a></p>\n","answers":["<p>Knowledge Bases for Amazon Bedrock</p>","<p>Watermark detection for Amazon Bedrock</p>","<p>Continued pretraining in Amazon Bedrock</p>","<p>Guardrails for Amazon Bedrock</p>"]},"correct_response":["a"],"section":"Fundamentals of Generative AI","question_plain":"A legal research firm is seeking to implement a cutting-edge AI solution that can generate detailed responses to complex legal queries by retrieving relevant information from their extensive database of legal documents. The company wants to use Amazon Bedrock to deploy a fully managed solution that supports an end-to-end Retrieval Augmented Generation (RAG) workflow, ensuring that the AI can pull contextually accurate information and generate high-quality answers efficiently.\n\nWhat solution or approach would you recommend for implementing fully managed support for a RAG workflow in Amazon Bedrock?","related_lectures":[]},{"_class":"assessment","id":95107877,"assessment_type":"multi-select","prompt":{"question":"<p>A company is exploring Amazon Q to streamline its internal business processes through automation and generative AI capabilities. The team is particularly interested in understanding how Amazon Q integrates generative AI techniques within its web application workflow to enhance tasks such as automating report generation, creating summaries, and analyzing large datasets. They want to know which specific generative AI techniques are employed in Amazon Q to achieve these outcomes.</p>\n\n<p>Which of the following generative AI techniques are used in the Amazon Q Business web application workflow? (Select two)</p>\n","relatedLectureIds":"","feedbacks":["","","","",""],"explanation":"<p>Correct options:</p>\n\n<p><strong>Large Language Model (LLM)</strong></p>\n\n<p>Large language models (LLMs) are a class of Foundation Models (FMs). For example, OpenAI's generative pre-trained transformer (GPT) models are LLMs. LLMs are specifically focused on language-based tasks such as such as summarization, text generation, classification, open-ended conversation, and information extraction.</p>\n\n<p><strong>Retrieval-Augmented Generation (RAG)</strong></p>\n\n<p>Retrieval-Augmented Generation (RAG) is the process of optimizing the output of a large language model, so it references an authoritative knowledge base outside of its training data sources before generating a response. Large Language Models (LLMs) are trained on vast volumes of data and use billions of parameters to generate original output for tasks like answering questions, translating languages, and completing sentences. RAG extends the already powerful capabilities of LLMs to specific domains or an organization's internal knowledge base, all without the need to retrain the model. It is a cost-effective approach to improving LLM output so it remains relevant, accurate, and useful in various contexts.</p>\n\n<p>Depending on the configuration, Amazon Q Business web application workflow can use LLM/RAG or both.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt1-q19-i1.jpg\">\nvia - <a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/how-it-works.html\">https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/how-it-works.html</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Diffusion Model</strong> - Diffusion models create new data by iteratively making controlled random changes to an initial data sample. They start with the original data and add subtle changes (noise), progressively making it less similar to the original. This noise is carefully controlled to ensure the generated data remains coherent and realistic. After adding noise over several iterations, the diffusion model reverses the process. Reverse denoising gradually removes the noise to produce a new data sample that resembles the original.</p>\n\n<p><strong>Generative adversarial network (GAN)</strong> - GANs work by training two neural networks in a competitive manner. The first network, known as the generator, generates fake data samples by adding random noise. The second network, called the discriminator, tries to distinguish between real data and the fake data produced by the generator. During training, the generator continually improves its ability to create realistic data while the discriminator becomes better at telling real from fake. This adversarial process continues until the generator produces data that is so convincing that the discriminator can't differentiate it from real data.</p>\n\n<p><strong>Variational autoencoders (VAE)</strong> - VAEs use two neural networks—the encoder and the decoder. The encoder neural network maps the input data to a mean and variance for each dimension of the latent space. It generates a random sample from a Gaussian (normal) distribution. This sample is a point in the latent space and represents a compressed, simplified version of the input data. The decoder neural network takes this sampled point from the latent space and reconstructs it back into data that resembles the original input.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/what-is/generative-ai/\">https://aws.amazon.com/what-is/generative-ai/</a></p>\n\n<p><a href=\"https://aws.amazon.com/what-is/retrieval-augmented-generation/\">https://aws.amazon.com/what-is/retrieval-augmented-generation/</a></p>\n\n<p><a href=\"https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/how-it-works.html\">https://docs.aws.amazon.com/amazonq/latest/qbusiness-ug/how-it-works.html</a></p>\n","answers":["<p>Large Language Model (LLM)</p>","<p>Diffusion Model</p>","<p>Retrieval-Augmented Generation (RAG)</p>","<p>Generative adversarial network (GAN)</p>","<p>Variational autoencoders (VAE)</p>"]},"correct_response":["a","c"],"section":"Applications of Foundation Models","question_plain":"A company is exploring Amazon Q to streamline its internal business processes through automation and generative AI capabilities. The team is particularly interested in understanding how Amazon Q integrates generative AI techniques within its web application workflow to enhance tasks such as automating report generation, creating summaries, and analyzing large datasets. They want to know which specific generative AI techniques are employed in Amazon Q to achieve these outcomes.\n\nWhich of the following generative AI techniques are used in the Amazon Q Business web application workflow? (Select two)","related_lectures":[]},{"_class":"assessment","id":95107875,"assessment_type":"multiple-choice","prompt":{"question":"<p>The marketing department at a media company wants to leverage Amazon Bedrock for making creative scripts for an upcoming ad campaign.</p>\n\n<p>What do you recommend?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Use higher <code>Temperature</code> to get more creative responses for the same prompt on Amazon Bedrock</strong></p>\n\n<p>Temperature is a value between 0 and 1, and it regulates the creativity of the model's responses. Use a lower temperature if you want more deterministic responses, and use a higher temperature if you want creative or different responses for the same prompt on Amazon Bedrock.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt1-q21-i1.jpg\">\nvia - <a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/inference-parameters.html\">https://docs.aws.amazon.com/bedrock/latest/userguide/inference-parameters.html</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Use higher <code>Top-P</code> to get more creative responses for the same prompt on Amazon Bedrock</strong></p>\n\n<p><strong>Use lower <code>Top-P</code> to get more creative responses for the same prompt on Amazon Bedrock</strong></p>\n\n<p>The inference parameter <code>Top P</code> represents the percentage of most likely candidates that the model considers for the next token. So, both these options serve as distractors for the given use case.</p>\n\n<p><strong>Use lower <code>Temperature</code> to get more creative responses for the same prompt on Amazon Bedrock</strong> - Use lower temperature if you want more deterministic responses, and use higher temperature if you want creative or different responses for the same prompt on Amazon Bedrock. So, this option is incorrect.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/inference-parameters.html\">https://docs.aws.amazon.com/bedrock/latest/userguide/inference-parameters.html</a></p>\n\n<p><a href=\"https://docs.aws.amazon.com/bedrock/latest/userguide/general-guidelines-for-bedrock-users.html\">https://docs.aws.amazon.com/bedrock/latest/userguide/general-guidelines-for-bedrock-users.html</a></p>\n","answers":["<p>Use higher <code>Top-P</code> to get more creative responses for the same prompt on Amazon Bedrock</p>","<p>Use lower <code>Temperature</code> to get more creative responses for the same prompt on Amazon Bedrock</p>","<p>Use higher <code>Temperature</code> to get more creative responses for the same prompt on Amazon Bedrock</p>","<p>Use lower <code>Top-P</code> to get more creative responses for the same prompt on Amazon Bedrock</p>"]},"correct_response":["c"],"section":"Fundamentals of AI and ML","question_plain":"The marketing department at a media company wants to leverage Amazon Bedrock for making creative scripts for an upcoming ad campaign.\n\nWhat do you recommend?","related_lectures":[]},{"_class":"assessment","id":95107873,"assessment_type":"multi-select","prompt":{"question":"<p>Which of the following are correct statements regarding the AWS Global Infrastructure? (Select two)</p>\n","relatedLectureIds":"","feedbacks":["","","","",""],"explanation":"<p>Correct options:</p>\n\n<p><strong>Each AWS Region consists of a minimum of three Availability Zones (AZ)</strong></p>\n\n<p><strong>Each Availability Zone (AZ) consists of one or more discrete data centers</strong></p>\n\n<p>AWS has the concept of a Region, which is a physical location around the world where AWS clusters its data centers. AWS calls each group of logical data centers an Availability Zone (AZ). Each AWS Region consists of a minimum of three, isolated, and physically separate AZs within a geographic area. Each AZ has independent power, cooling, and physical security and is connected via redundant, ultra-low-latency networks.</p>\n\n<p>An Availability Zone (AZ) is one or more discrete data centers with redundant power, networking, and connectivity in an AWS Region. All AZs in an AWS Region are interconnected with high-bandwidth, low-latency networking, over fully redundant, dedicated metro fiber providing high-throughput, low-latency networking between AZs.</p>\n\n<p>AWS Regions and Availability Zones Overview:\n<img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt1-q29-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/about-aws/global-infrastructure/regions_az/\">https://aws.amazon.com/about-aws/global-infrastructure/regions_az/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Each AWS Region consists of a minimum of two Availability Zones (AZ)</strong></p>\n\n<p><strong>Each Availability Zone (AZ) consists of two or more discrete data centers</strong></p>\n\n<p><strong>Each AWS Region consists of two or more Edge Locations</strong></p>\n\n<p>These three options contradict the details provided earlier in the explanation, so these options are incorrect.</p>\n\n<p>Reference:</p>\n\n<p><a href=\"https://aws.amazon.com/about-aws/global-infrastructure/regions_az/\">https://aws.amazon.com/about-aws/global-infrastructure/regions_az/</a></p>\n","answers":["<p>Each AWS Region consists of a minimum of two Availability Zones (AZ)</p>","<p>Each AWS Region consists of a minimum of three Availability Zones (AZ)</p>","<p>Each Availability Zone (AZ) consists of one or more discrete data centers</p>","<p>Each Availability Zone (AZ) consists of two or more discrete data centers</p>","<p>Each AWS Region consists of two or more Edge Locations</p>"]},"correct_response":["b","c"],"section":"Security, Compliance, and Governance for AI Solutions","question_plain":"Which of the following are correct statements regarding the AWS Global Infrastructure? (Select two)","related_lectures":[]},{"_class":"assessment","id":95107871,"assessment_type":"multiple-choice","prompt":{"question":"<p>In the context of the shared responsibility model for AWS cloud services, which of the following best describes the division of responsibilities between the customer and AWS?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>AWS is responsible for the security \"of\" the cloud, including infrastructure, hardware, and software, while the customer is responsible for security \"in\" the cloud, including data, applications, and access management</strong></p>\n\n<p>In the shared responsibility model, AWS is responsible for the security of the cloud, which includes the physical security of data centers, networking infrastructure, and hardware. The customer is responsible for security in the cloud, which includes securing their data, managing access and identity, configuring network settings, and ensuring application security.</p>\n\n<p>Shared Responsibility Model Overview:\n<img src=\"https://d1.awsstatic.com/security-center/Shared_Responsibility_Model_V2.59d1eccec334b366627e9295b304202faf7b899b.jpg\">\nvia - <a href=\"https://aws.amazon.com/compliance/shared-responsibility-model/\">https://aws.amazon.com/compliance/shared-responsibility-model/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>AWS is responsible for configuring and managing the security settings of the customer's applications, while the customer is responsible for the underlying hardware infrastructure</strong> - AWS manages the underlying infrastructure, including the hardware, but the customer is responsible for configuring and managing the security settings of their applications.</p>\n\n<p><strong>AWS handles all security aspects including data encryption, user access management, and application security, while the customer only needs to manage their virtual machines</strong> - AWS does not handle all aspects of security; customers must manage their own data encryption, user access management, and application security.</p>\n\n<p><strong>Customers are responsible for ensuring the physical security of data centers, while AWS is responsible for monitoring network traffic and managing user identities</strong> - Customers do not manage the physical security of data centers; AWS is responsible for this aspect of security.</p>\n\n<p>Reference:</p>\n\n<p><a href=\"https://aws.amazon.com/compliance/shared-responsibility-model/\">https://aws.amazon.com/compliance/shared-responsibility-model/</a></p>\n","answers":["<p>AWS is responsible for configuring and managing the security settings of the customer's applications, while the customer is responsible for the underlying hardware infrastructure</p>","<p>AWS is responsible for the security \"of\" the cloud, including infrastructure, hardware, and software, while the customer is responsible for security \"in\" the cloud, including data, applications, and access management</p>","<p>AWS handles all security aspects including data encryption, user access management, and application security, while the customer only needs to manage their virtual machines</p>","<p>Customers are responsible for ensuring the physical security of data centers, while AWS is responsible for monitoring network traffic and managing user identities</p>"]},"correct_response":["b"],"section":"Security, Compliance, and Governance for AI Solutions","question_plain":"In the context of the shared responsibility model for AWS cloud services, which of the following best describes the division of responsibilities between the customer and AWS?","related_lectures":[]},{"_class":"assessment","id":95107869,"assessment_type":"multiple-choice","prompt":{"question":"<p>A healthcare analytics company is exploring the use of Foundation Models to automate the process of labeling vast amounts of medical data, such as patient records and clinical notes, to enhance its machine learning models for diagnosis and treatment recommendations. The company wants to understand the specific techniques that Foundation Models use to generate labels from raw input data, helping streamline the data annotation process without requiring extensive manual effort.</p>\n\n<p>Which of the following techniques is used by Foundation Models to create labels from input data?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Self-supervised learning</strong></p>\n\n<p>It works when models are provided vast amounts of raw, almost entirely, or completely unlabeled data and then generate the labels themselves.</p>\n\n<p>Foundation models use self-supervised learning to create labels from input data. In self-supervised learning, models are provided vast amounts of raw completely unlabeled data and then the models generate the labels themselves. This means no one has instructed or trained the model with labeled training data sets.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Reinforcement learning</strong> - Reinforcement learning is a method with reward values attached to the different steps that the algorithm must go through. So the model’s goal is to accumulate as many reward points as possible and eventually reach an end goal.</p>\n\n<p><strong>Supervised learning</strong> - In supervised learning, models are supplied with labeled and defined training data to assess for correlations. The sample data specifies both the input and the output for the model. For example, images of handwritten figures are annotated to indicate which number they correspond to. A supervised learning system could recognize the clusters of pixels and shapes associated with each number, given sufficient examples.</p>\n\n<p>Data labeling is the process of categorizing input data with its corresponding defined output values. Labeled training data is required for supervised learning. For example, millions of apple and banana images would need to be tagged with the words “apple” or “banana.” Then machine learning applications could use this training data to guess the name of the fruit when given a fruit image.</p>\n\n<p><strong>Unsupervised learning</strong> - Unsupervised learning algorithms train on unlabeled data. They scan through new data, trying to establish meaningful connections between the inputs and predetermined outputs. They can spot patterns and categorize data. For example, unsupervised algorithms could group news articles from different news sites into common categories like sports, crime, etc. They can use natural language processing to comprehend meaning and emotion in the article.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/what-is/foundation-models/\">https://aws.amazon.com/what-is/foundation-models/</a></p>\n\n<p><a href=\"https://aws.amazon.com/what-is/machine-learning/\">https://aws.amazon.com/what-is/machine-learning/</a></p>\n","answers":["<p>Reinforcement learning</p>","<p>Self-supervised learning</p>","<p>Supervised learning</p>","<p>Unsupervised learning</p>"]},"correct_response":["b"],"section":"Fundamentals of Generative AI","question_plain":"A healthcare analytics company is exploring the use of Foundation Models to automate the process of labeling vast amounts of medical data, such as patient records and clinical notes, to enhance its machine learning models for diagnosis and treatment recommendations. The company wants to understand the specific techniques that Foundation Models use to generate labels from raw input data, helping streamline the data annotation process without requiring extensive manual effort.\n\nWhich of the following techniques is used by Foundation Models to create labels from input data?","related_lectures":[]},{"_class":"assessment","id":95107867,"assessment_type":"multi-select","prompt":{"question":"<p>A financial services company is exploring Amazon Bedrock to streamline its AI development for use cases such as fraud detection, personalized customer service, and automated reporting. The company is particularly interested in understanding the key features and benefits of Amazon Bedrock, including its ability to simplify access to powerful foundation models, support customizations, and integrate with existing AWS services.</p>\n\n<p>To make an informed decision, the company needs to identify which of the following accurately applies to Amazon Bedrock and its capabilities? (Select two)</p>\n","relatedLectureIds":"","feedbacks":["","","","",""],"explanation":"<p>Correct options:</p>\n\n<p>With Amazon Bedrock, you will be charged for model inference and customization. You have a choice of two pricing plans for inference: 1. On-Demand and Batch: This mode allows you to use FMs on a pay-as-you-go basis without having to make any time-based term commitments. 2. Provisioned Throughput: This mode allows you to provision sufficient throughput to meet your application's performance requirements in exchange for a time-based term commitment.</p>\n\n<p><strong>Smaller models are cheaper to use than larger models</strong></p>\n\n<p>The cost of generative AI models can vary. It's important to weigh the trade-offs between model size and speed. Larger models tend to be more accurate but are costly and have limited deployment options. In contrast, smaller models are more affordable and faster, offering more deployment flexibility.</p>\n\n<p><strong>You can use a customized model only in the Provisioned Throughput mode</strong></p>\n\n<p>With the Provisioned Throughput mode, you can purchase model units for a specific base or custom model. The Provisioned Throughput mode is primarily designed for large consistent inference workloads that need guaranteed throughput. Custom models can only be accessed using Provisioned Throughput.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt2-q8-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/bedrock/pricing/\">https://aws.amazon.com/bedrock/pricing/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>You can use the On-Demand mode only with time-based term commitments</strong> - With the On-Demand mode, you only pay for what you use, with no time-based term commitments. So, this option is incorrect.</p>\n\n<p><strong>Larger models are cheaper to use than smaller models</strong> - As mentioned above, larger models tend to be more accurate but are costly and have limited deployment options. In contrast, smaller models are more affordable and faster, offering more deployment flexibility.</p>\n\n<p><strong>You can use a customized model in the Provisioned Throughput or On-Demand mode</strong> - Custom models can only be accessed using Provisioned Throughput. So, this option is incorrect.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/bedrock/pricing/\">https://aws.amazon.com/bedrock/pricing/</a></p>\n\n<p><a href=\"https://aws.amazon.com/blogs/machine-learning/best-practices-to-build-generative-ai-applications-on-aws/\">https://aws.amazon.com/blogs/machine-learning/best-practices-to-build-generative-ai-applications-on-aws/</a></p>\n","answers":["<p>You can use the On-Demand mode only with time-based term commitments</p>","<p>Larger models are cheaper to use than smaller models</p>","<p>You can use a customized model in the Provisioned Throughput or On-Demand mode</p>","<p>Smaller models are cheaper to use than larger models</p>","<p>You can use a customized model only in the Provisioned Throughput mode</p>"]},"correct_response":["d","e"],"section":"Fundamentals of Generative AI","question_plain":"A financial services company is exploring Amazon Bedrock to streamline its AI development for use cases such as fraud detection, personalized customer service, and automated reporting. The company is particularly interested in understanding the key features and benefits of Amazon Bedrock, including its ability to simplify access to powerful foundation models, support customizations, and integrate with existing AWS services.\n\nTo make an informed decision, the company needs to identify which of the following accurately applies to Amazon Bedrock and its capabilities? (Select two)","related_lectures":[]},{"_class":"assessment","id":95107865,"assessment_type":"multiple-choice","prompt":{"question":"<p>A healthcare company is evaluating the use of Foundation Models (FMs) in generative AI to automate tasks such as medical report generation, data analysis, and personalized patient communications. The company's data science team wants to better understand the key features and benefits of Foundation Models, particularly how they can be applied to various tasks with minimal fine-tuning and customization. To ensure they choose the right model for their needs, the team is seeking to clarify the essential characteristics of FMs in generative AI.</p>\n\n<p>Which of the following is correct regarding Foundation Models (FMs) in the context of generative AI?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>FMs use unlabeled training data sets for self-supervised learning</strong></p>\n\n<p>In supervised learning, you train the model with a set of input data and a corresponding set of paired labeled output data. Unsupervised machine learning is when you give the algorithm input data without any labeled output data. Then, on its own, the algorithm identifies patterns and relationships in and between the data. Self-supervised learning is a machine learning approach that applies unsupervised learning methods to tasks usually requiring supervised learning. Instead of using labeled datasets for guidance, self-supervised models create implicit labels from unstructured data.</p>\n\n<p>Foundation models use self-supervised learning to create labels from input data. This means no one has instructed or trained the model with labeled training data sets.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt2-q22-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/what-is/foundation-models/\">https://aws.amazon.com/what-is/foundation-models/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>FMs use labeled training data sets for self-supervised learning</strong></p>\n\n<p><strong>FMs use labeled training data sets for supervised learning</strong></p>\n\n<p><strong>FMs use unlabeled training data sets for supervised learning</strong></p>\n\n<p>These three options contradict the explanation provided above, so these options are incorrect.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/what-is/foundation-models/\">https://aws.amazon.com/what-is/foundation-models/</a></p>\n\n<p><a href=\"https://docs.aws.amazon.com/sagemaker/latest/dg/jumpstart-foundation-models-fine-tuning.html\">https://docs.aws.amazon.com/sagemaker/latest/dg/jumpstart-foundation-models-fine-tuning.html</a></p>\n\n<p><a href=\"https://aws.amazon.com/compare/the-difference-between-machine-learning-supervised-and-unsupervised/\">https://aws.amazon.com/compare/the-difference-between-machine-learning-supervised-and-unsupervised/</a></p>\n","answers":["<p>FMs use labeled training data sets for self-supervised learning</p>","<p>FMs use labeled training data sets for supervised learning</p>","<p>FMs use unlabeled training data sets for supervised learning</p>","<p>FMs use unlabeled training data sets for self-supervised learning</p>"]},"correct_response":["d"],"section":"Fundamentals of Generative AI","question_plain":"A healthcare company is evaluating the use of Foundation Models (FMs) in generative AI to automate tasks such as medical report generation, data analysis, and personalized patient communications. The company's data science team wants to better understand the key features and benefits of Foundation Models, particularly how they can be applied to various tasks with minimal fine-tuning and customization. To ensure they choose the right model for their needs, the team is seeking to clarify the essential characteristics of FMs in generative AI.\n\nWhich of the following is correct regarding Foundation Models (FMs) in the context of generative AI?","related_lectures":[]},{"_class":"assessment","id":95107863,"assessment_type":"multiple-choice","prompt":{"question":"<p>A retail company is exploring advanced AI solutions to enhance customer experience by integrating both visual and textual data for tasks such as product recommendations, automated image tagging, and customer support. The team is considering using multimodal models, which can process and understand multiple types of input data, but they need a clear understanding of how these models work and their key advantages. To help make an informed decision, the company wants to clarify the capabilities of multimodal models.</p>\n\n<p>Which of the following summarizes the capabilities of a multimodal model?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>A multimodal model can accept a mix of input types such as audio/text and create a mix of output types such as video/image</strong></p>\n\n<p>A multimodal model is an artificial intelligence system designed to process and understand multiple types of data, such as text, images, audio, and video. Unlike unimodal models, which handle a single type of data, multimodal models can integrate and make sense of information from various sources, allowing them to perform more complex and versatile tasks.</p>\n\n<p>Multimodal models represent a significant advancement in AI, enabling the integration and understanding of multiple types of data. By combining different modalities, these models can perform a wide range of complex tasks, making them highly versatile and powerful tools in various fields.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>A multimodal model can accept only a single type of input and it can only create a single type of output</strong></p>\n\n<p><strong>A multimodal model can accept a mix of input types such as audio/text, however, it can only create a single type of output</strong></p>\n\n<p><strong>A multimodal model can accept only a single type of input, however, it can create a mix of output types such as video/image</strong></p>\n\n<p>These three options contradict the explanation provided above, so these options are incorrect.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/blogs/industries/multimodal-data-analysis-with-aws-health-and-machine-learning-services/\">https://aws.amazon.com/blogs/industries/multimodal-data-analysis-with-aws-health-and-machine-learning-services/</a></p>\n\n<p><a href=\"https://aws.amazon.com/blogs/industries/training-machine-learning-models-on-multimodal-health-data-with-amazon-sagemaker/\">https://aws.amazon.com/blogs/industries/training-machine-learning-models-on-multimodal-health-data-with-amazon-sagemaker/</a></p>\n","answers":["<p>A multimodal model can accept only a single type of input and it can only create a single type of output</p>","<p>A multimodal model can accept a mix of input types such as audio/text, however, it can only create a single type of output</p>","<p>A multimodal model can accept a mix of input types such as audio/text and create a mix of output types such as video/image</p>","<p>A multimodal model can accept only a single type of input, however, it can create a mix of output types such as video/image</p>"]},"correct_response":["c"],"section":"Fundamentals of Generative AI","question_plain":"A retail company is exploring advanced AI solutions to enhance customer experience by integrating both visual and textual data for tasks such as product recommendations, automated image tagging, and customer support. The team is considering using multimodal models, which can process and understand multiple types of input data, but they need a clear understanding of how these models work and their key advantages. To help make an informed decision, the company wants to clarify the capabilities of multimodal models.\n\nWhich of the following summarizes the capabilities of a multimodal model?","related_lectures":[]},{"_class":"assessment","id":95107841,"assessment_type":"multiple-choice","prompt":{"question":"<p>A retail company is embarking on a machine learning project to enhance customer segmentation and personalize marketing campaigns. As the data science team begins planning the implementation, the team wants to identify the primary challenges in machine learning implementation. Understanding these challenges will help the team anticipate potential roadblocks and develop strategies to overcome them.</p>\n\n<p>Which of the following represents the best option for the given use case?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Difficulty in collecting and preparing high-quality data for training models</strong></p>\n\n<p>One of the main challenges in machine learning implementation is the difficulty in collecting and preparing high-quality data for training models. High-quality data is essential for building effective machine learning models, and ensuring that the data is clean, relevant, and well-prepared can be a complex and time-consuming process.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt2-q27-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/what-is/machine-learning/\">https://aws.amazon.com/what-is/machine-learning/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Lack of available machine learning algorithms</strong> - There are many machine learning algorithms available, but the challenge lies in other aspects of implementation.</p>\n\n<p><strong>Insufficient computational power to run basic machine learning models</strong> - While computational power can be a challenge for very large models, it is not a primary challenge for most machine learning implementations due to the availability of powerful computing resources.</p>\n\n<p><strong>Limited applications of machine learning in real-world scenarios</strong> - Machine learning has a wide range of applications in real-world scenarios, and its use is not particularly limited.</p>\n\n<p>Reference:</p>\n\n<p><a href=\"https://aws.amazon.com/what-is/machine-learning/\">https://aws.amazon.com/what-is/machine-learning/</a></p>\n","answers":["<p>Lack of available machine learning algorithms</p>","<p>Insufficient computational power to run basic machine learning models</p>","<p>Difficulty in collecting and preparing high-quality data for training models</p>","<p>Limited applications of machine learning in real-world scenarios</p>"]},"correct_response":["c"],"section":"Fundamentals of AI and ML","question_plain":"A retail company is embarking on a machine learning project to enhance customer segmentation and personalize marketing campaigns. As the data science team begins planning the implementation, the team wants to identify the primary challenges in machine learning implementation. Understanding these challenges will help the team anticipate potential roadblocks and develop strategies to overcome them.\n\nWhich of the following represents the best option for the given use case?","related_lectures":[]},{"_class":"assessment","id":95107859,"assessment_type":"multiple-choice","prompt":{"question":"<p>A retail company is building a machine learning model to forecast demand for its products, but the data science team is facing challenges in balancing model complexity and accuracy. They are trying to avoid overfitting as well as underfitting, since understanding the differences between these two issues is crucial for optimizing the model's performance on both historical and unseen data.</p>\n\n<p>How would you differentiate between overfitting and underfitting in the context of machine learning?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Overfitting occurs when a model performs well on the training data but poorly on new, unseen data, while underfitting occurs when a model performs poorly on both the training data and new, unseen data</strong></p>\n\n<p>Overfitting happens when a model learns the training data too well, including noise and outliers, leading to excellent performance on the training data but poor generalization to new, unseen data. Underfitting occurs when a model is too simplistic to capture the underlying patterns in the data, resulting in poor performance on both the training data and new data.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt2-q34-i1.jpg\">\nvia - <a href=\"https://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html\">https://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Overfitting occurs when a model is too simple to capture the underlying patterns in the data, while underfitting occurs when a model is too complex and captures noise rather than the actual patterns</strong> - This option reverses the definitions of overfitting and underfitting.</p>\n\n<p><strong>Overfitting is desirable as it ensures the model captures all nuances in the training data, while underfitting is desirable as it ensures the model generalizes well to new data</strong> - Overfitting is generally undesirable because it reduces a model’s ability to generalize to new data, while underfitting is also undesirable because the model fails to capture important patterns in the data.</p>\n\n<p><strong>Overfitting and underfitting both refer to a model performing equally well on both the training data and new, unseen data</strong> - Both overfitting and underfitting are problematic, leading to poor model performance on new data, and not equal performance on training and new data.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html\">https://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html</a></p>\n\n<p><a href=\"https://aws.amazon.com/what-is/overfitting/\">https://aws.amazon.com/what-is/overfitting/</a></p>\n","answers":["<p>Overfitting occurs when a model performs well on the training data but poorly on new, unseen data, while underfitting occurs when a model performs poorly on both the training data and new, unseen data</p>","<p>Overfitting occurs when a model is too simple to capture the underlying patterns in the data, while underfitting occurs when a model is too complex and captures noise rather than the actual patterns</p>","<p>Overfitting is desirable as it ensures the model captures all nuances in the training data, while underfitting is desirable as it ensures the model generalizes well to new data</p>","<p>Overfitting and underfitting both refer to a model performing equally well on both the training data and new, unseen data</p>"]},"correct_response":["a"],"section":"Fundamentals of AI and ML","question_plain":"A retail company is building a machine learning model to forecast demand for its products, but the data science team is facing challenges in balancing model complexity and accuracy. They are trying to avoid overfitting as well as underfitting, since understanding the differences between these two issues is crucial for optimizing the model's performance on both historical and unseen data.\n\nHow would you differentiate between overfitting and underfitting in the context of machine learning?","related_lectures":[]},{"_class":"assessment","id":95107857,"assessment_type":"multi-select","prompt":{"question":"<p>A healthcare technology company is developing AI-driven applications to assist doctors in diagnosing diseases. As part of its commitment to ethical standards, the company wants to ensure that its AI models are fair, transparent, and free from bias. To achieve this, the data science team is exploring AWS services and tools that can help implement Responsible AI practices, as understanding which AWS services support these practices is critical for the company’s AI development strategy.</p>\n\n<p>Which AWS services/tools can be used to implement Responsible AI practices? (Select two)</p>\n","relatedLectureIds":"","feedbacks":["","","","",""],"explanation":"<p>Correct options:</p>\n\n<p><strong>Amazon SageMaker Clarify</strong></p>\n\n<p>Amazon SageMaker Clarify is a service provided by AWS (Amazon Web Services) that helps developers detect biases and explain the predictions made by machine learning models. It is part of the Amazon SageMaker suite of machine learning tools and focuses on enhancing transparency, fairness, and explainability in machine learning workflows.</p>\n\n<p><strong>Amazon SageMaker Model Monitor</strong></p>\n\n<p>Amazon SageMaker Model Monitor is a service within the Amazon SageMaker suite that helps developers continuously monitor machine learning models deployed in production. It ensures that models maintain optimal performance and make accurate predictions over time by detecting data quality issues, concept drift, and other anomalies. Amazon SageMaker Model Monitor automatically detects and alerts you to inaccurate predictions from deployed models.</p>\n\n<p>Tools and resources to build AI responsibly:\n<img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt2-q46-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/machine-learning/responsible-ai/resources/\">https://aws.amazon.com/machine-learning/responsible-ai/resources/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Amazon SageMaker JumpStart</strong> - Amazon SageMaker JumpStart is a machine learning hub with foundation models, built-in algorithms, and prebuilt ML solutions that you can deploy with just a few clicks.</p>\n\n<p><strong>Amazon Inspector</strong> - Amazon Inspector is an automated vulnerability management service that continually scans AWS workloads for software vulnerabilities and unintended network exposure.</p>\n\n<p><strong>AWS Audit Manager</strong> - AWS Audit Manager helps you assess internal risk with prebuilt frameworks that translate evidence from cloud services into security IT audit reports.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/machine-learning/responsible-ai/resources/\">https://aws.amazon.com/machine-learning/responsible-ai/resources/</a></p>\n\n<p><a href=\"https://aws.amazon.com/sagemaker/clarify/\">https://aws.amazon.com/sagemaker/clarify/</a></p>\n\n<p><a href=\"https://aws.amazon.com/sagemaker/ml-governance/\">https://aws.amazon.com/sagemaker/ml-governance/</a></p>\n","answers":["<p>Amazon SageMaker Clarify</p>","<p>Amazon SageMaker JumpStart</p>","<p>Amazon Inspector</p>","<p>AWS Audit Manager</p>","<p>Amazon SageMaker Model Monitor</p>"]},"correct_response":["a","e"],"section":"Guidelines for Responsible AI","question_plain":"A healthcare technology company is developing AI-driven applications to assist doctors in diagnosing diseases. As part of its commitment to ethical standards, the company wants to ensure that its AI models are fair, transparent, and free from bias. To achieve this, the data science team is exploring AWS services and tools that can help implement Responsible AI practices, as understanding which AWS services support these practices is critical for the company’s AI development strategy.\n\nWhich AWS services/tools can be used to implement Responsible AI practices? (Select two)","related_lectures":[]},{"_class":"assessment","id":95107855,"assessment_type":"multiple-choice","prompt":{"question":"<p>Match the following Amazon SageMaker services to the respective use cases:</p>\n\n<p>A) SageMaker Data Wrangler</p>\n\n<p>B) SageMaker Canvas</p>\n\n<p>C) SageMaker Ground Truth</p>\n\n<p>1) Harnessing human input across the ML lifecycle to improve the accuracy and relevancy of models</p>\n\n<p>2) Offers 300+ pre-configured data transformations to prepare data for ML</p>\n\n<p>3) No-code service with an intuitive, point-and-click interface</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>A-2, B-3, C-1</strong></p>\n\n<p>SageMaker Canvas is a no-code service with an intuitive, point-and-click interface that lets you create highly accurate ML-based predictions from your data. SageMaker Canvas lets you access and combine data from a variety of sources using a drag-and-drop user interface, automatically cleaning and preparing data to minimize manual cleanup.</p>\n\n<p>Amazon SageMaker Ground Truth offers the most comprehensive set of human-in-the-loop capabilities, allowing you to harness the power of human feedback across the ML lifecycle to improve the accuracy and relevancy of models. You can complete a variety of human-in-the-loop tasks with SageMaker Ground Truth, from data generation and annotation to model review, customization, and evaluation, either through a self-service or an AWS-managed offering.</p>\n\n<p>SageMaker Data Wrangler supports tabular, time-series, and image data, offering 300+ pre-configured data transformations to prepare these different data modalities. For customers wanting to prepare text data in Data Wrangler for NLP use cases, Data Wrangler supports the NLTK library so that customers can prepare text data by authoring their custom transformations in Data Wrangler.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>A-3, B-2, C-1</strong></p>\n\n<p><strong>A-2, B-1, C-3</strong></p>\n\n<p><strong>A-3, B-1, C-2</strong></p>\n\n<p>These three options contradict the explanation provided above, so these options are incorrect.</p>\n\n<p>Reference:</p>\n\n<p><a href=\"https://aws.amazon.com/sagemaker/faqs/\">https://aws.amazon.com/sagemaker/faqs/</a></p>\n","answers":["<p>A-3, B-2, C-1</p>","<p>A-2, B-1, C-3</p>","<p>A-2, B-3, C-1</p>","<p>A-3, B-1, C-2</p>"]},"correct_response":["c"],"section":"Applications of Foundation Models","question_plain":"Match the following Amazon SageMaker services to the respective use cases:\n\nA) SageMaker Data Wrangler\n\nB) SageMaker Canvas\n\nC) SageMaker Ground Truth\n\n1) Harnessing human input across the ML lifecycle to improve the accuracy and relevancy of models\n\n2) Offers 300+ pre-configured data transformations to prepare data for ML\n\n3) No-code service with an intuitive, point-and-click interface","related_lectures":[]},{"_class":"assessment","id":95107853,"assessment_type":"multiple-choice","prompt":{"question":"<p>A retail company is developing machine learning models to analyze customer behavior and optimize inventory management. The data science team is working with both structured data as well as unstructured data and needs to understand how these two types of data differ in terms of how they are processed and used in machine learning models. Understanding this key difference will help the team select the right algorithms and preprocessing methods.</p>\n\n<p>Give this context, how would you outline the differences between structured data and unstructured data?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Structured data is organized in a predefined manner, often in rows and columns, making it easy to search and analyze, while unstructured data lacks a specific format and includes data like text, images, and videos</strong></p>\n\n<p>Structured data is highly organized and formatted, typically found in databases and spreadsheets, making it straightforward to search and analyze. Unstructured data, on the other hand, does not have a predefined format and can include diverse data types such as text, images, and videos.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt3-q24-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/compare/the-difference-between-structured-data-and-unstructured-data/\">https://aws.amazon.com/compare/the-difference-between-structured-data-and-unstructured-data/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Structured data is typically freeform text that lacks any specific format, whereas unstructured data is organized in a tabular format with rows and columns</strong> - Structured data is not freeform text; it is organized in a specific format, usually in rows and columns. Unstructured data does not have a predefined format.</p>\n\n<p><strong>Structured data includes data like text, images, and videos, whereas unstructured data is limited to numerical data only</strong> - Structured data is not limited to numerical data; it can include various data types as long as it is organized. Unstructured data includes data types like text, images, and videos.</p>\n\n<p><strong>Structured data is used exclusively for training machine learning models, whereas unstructured data is used solely for storing information without any analytical purpose</strong> - Both structured and unstructured data can be used for training machine learning models and for various analytical purposes, not just storage.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/compare/the-difference-between-structured-data-and-unstructured-data/\">https://aws.amazon.com/compare/the-difference-between-structured-data-and-unstructured-data/</a></p>\n","answers":["<p>Structured data is typically freeform text that lacks any specific format, whereas unstructured data is organized in a tabular format with rows and columns</p>","<p>Structured data is organized in a predefined manner, often in rows and columns, making it easy to search and analyze, while unstructured data lacks a specific format and includes data like text, images, and videos</p>","<p>Structured data includes data like text, images, and videos, whereas unstructured data is limited to numerical data only</p>","<p>Structured data is used exclusively for training machine learning models, whereas unstructured data is used solely for storing information without any analytical purpose</p>"]},"correct_response":["b"],"section":"Fundamentals of AI and ML","question_plain":"A retail company is developing machine learning models to analyze customer behavior and optimize inventory management. The data science team is working with both structured data as well as unstructured data and needs to understand how these two types of data differ in terms of how they are processed and used in machine learning models. Understanding this key difference will help the team select the right algorithms and preprocessing methods.\n\nGive this context, how would you outline the differences between structured data and unstructured data?","related_lectures":[]},{"_class":"assessment","id":95107851,"assessment_type":"multiple-choice","prompt":{"question":"<p>A financial services company is exploring machine learning to automate credit scoring and fraud detection. The leadership team, new to this technology, needs to understand the core concept behind machine learning. Gaining clarity on this central idea will help them decide how to best apply machine learning to their business operations. The company has tasked you, as an AI Practitioner, to convey the central idea behind machine learning to the leadership team.</p>\n\n<p>What do you recommend?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Machine learning involves training algorithms on large datasets to identify patterns and make predictions or decisions based on new data</strong></p>\n\n<p>Machine learning works by training algorithms on large datasets, allowing them to identify patterns within the data. Once trained, these algorithms can make predictions or decisions when presented with new data, improving their performance over time as they are exposed to more data.</p>\n\n<p>The central idea behind machine learning is an existing mathematical relationship between any input and output data combination. The machine learning model does not know this relationship in advance but can guess if sufficient examples of input-output data sets are given. This means every machine learning algorithm is built around a modifiable math function. The underlying principle can be understood like this:</p>\n\n<p>We ‘train’ the algorithm by giving it the following input/output (i,o) combinations – (2,10), (5,19), and (9,31)\nThe algorithm computes the relationship between input and output to be: o=3*i+4\nWe then give it input 7 and ask it to predict the output. It can automatically determine the output as 25.</p>\n\n<p>While this is a basic understanding, machine learning focuses on the principle that computer systems can mathematically link all complex data points as long as they have sufficient data and computing power to process. Therefore, the accuracy of the output is directly co-relational to the magnitude of the input given. Machine learning phases are given below.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt3-q25-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/what-is/machine-learning/\">https://aws.amazon.com/what-is/machine-learning/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Machine learning works by using predefined rules to generate outcomes without the need for data input</strong> - Machine learning does not rely on predefined rules alone; it uses data to learn and make predictions or decisions.</p>\n\n<p><strong>Machine learning is primarily based on hardware configurations and does not rely on software algorithms or data analysis</strong> - Machine learning is fundamentally based on software algorithms and data analysis rather than solely on hardware configurations.</p>\n\n<p><strong>Machine learning only functions effectively when data is manually labeled and categorized by humans</strong> - While labeled data can improve the performance of supervised learning models, machine learning can also function with unlabeled data through unsupervised learning methods.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://aws.amazon.com/what-is/machine-learning/\">https://aws.amazon.com/what-is/machine-learning/</a></p>\n","answers":["<p>Machine learning involves training algorithms on large datasets to identify patterns and make predictions or decisions based on new data</p>","<p>Machine learning works by using predefined rules to generate outcomes without the need for data input</p>","<p>Machine learning is primarily based on hardware configurations and does not rely on software algorithms or data analysis</p>","<p>Machine learning only functions effectively when data is manually labeled and categorized by humans</p>"]},"correct_response":["a"],"section":"Fundamentals of AI and ML","question_plain":"A financial services company is exploring machine learning to automate credit scoring and fraud detection. The leadership team, new to this technology, needs to understand the core concept behind machine learning. Gaining clarity on this central idea will help them decide how to best apply machine learning to their business operations. The company has tasked you, as an AI Practitioner, to convey the central idea behind machine learning to the leadership team.\n\nWhat do you recommend?","related_lectures":[]},{"_class":"assessment","id":95107849,"assessment_type":"multiple-choice","prompt":{"question":"<p>A healthcare company is developing a machine learning model to predict patient outcomes based on medical data. To ensure the model generalizes well, the company needs to understand the balance between underfitting and overfitting and how to address these issues.</p>\n\n<p>Which of the following would you identify as correct regarding underfitting and overfitting in machine learning?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Underfit models experience high bias, whereas, overfit models experience high variance</strong></p>\n\n<p>Your model is underfitting the training data when the model performs poorly on the training data. This is because the model is unable to capture the relationship between the input examples (often called X) and the target values (often called Y). Your model is overfitting your training data when you see that the model performs well on the training data but does not perform well on the evaluation data. This is because the model is memorizing the data it has seen and is unable to generalize to unseen examples.</p>\n\n<p>Underfit models experience high bias — they give inaccurate results for both the training data and test set. On the other hand, overfit models experience high variance - they give accurate results for the training set but not for the test set. More model training results in less bias but variance can increase. Data scientists aim to find the sweet spot between underfitting and overfitting when fitting a model. A well-fitted model can quickly establish the dominant trend for seen and unseen data sets.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Underfit models experience low bias, whereas, overfit models experience low variance</strong></p>\n\n<p><strong>Underfit models experience low bias, whereas, overfit models experience high variance</strong></p>\n\n<p><strong>Underfit models experience high bias, whereas, overfit models experience low variance</strong></p>\n\n<p>These three options contradict the explanation provided above, so these options are incorrect.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html\">https://docs.aws.amazon.com/machine-learning/latest/dg/model-fit-underfitting-vs-overfitting.html</a></p>\n\n<p><a href=\"https://aws.amazon.com/what-is/overfitting/\">https://aws.amazon.com/what-is/overfitting/</a></p>\n","answers":["<p>Underfit models experience low bias, whereas, overfit models experience low variance</p>","<p>Underfit models experience low bias, whereas, overfit models experience high variance</p>","<p>Underfit models experience high bias, whereas, overfit models experience high variance</p>","<p>Underfit models experience high bias, whereas, overfit models experience low variance</p>"]},"correct_response":["c"],"section":"Fundamentals of AI and ML","question_plain":"A healthcare company is developing a machine learning model to predict patient outcomes based on medical data. To ensure the model generalizes well, the company needs to understand the balance between underfitting and overfitting and how to address these issues.\n\nWhich of the following would you identify as correct regarding underfitting and overfitting in machine learning?","related_lectures":[]},{"_class":"assessment","id":95107847,"assessment_type":"multiple-choice","prompt":{"question":"<p>A healthcare company is implementing a machine learning solution to predict patient outcomes and improve treatment plans. The data science team is working to structure their workflow effectively, ensuring that they follow the correct steps in the machine learning process. Understanding the proper sequence of these steps will help the team streamline their project and ensure a successful implementation.</p>\n\n<p>Given this context, which of the following would you recommend as the correct sequence of steps in the machine learning process?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Data collection, Data preprocessing, Model training, Model evaluation</strong></p>\n\n<p>The machine learning process typically follows these steps:</p>\n\n<p>Data Collection: Gathering the necessary data from various sources.\nData Preprocessing: Cleaning and preparing the data for training, including handling missing values, normalizing data, and splitting it into training and test sets.\nModel Training: Using the preprocessed data to train a machine learning algorithm, resulting in a trained model.\nModel Evaluation: Assessing the performance of the trained model using a separate test set to ensure it generalizes well to new, unseen data.</p>\n\n<p><img src=\"https://assets-pt.media.datacumulus.com/aws-aif-pt/assets/pt3-q41-i1.jpg\">\nvia - <a href=\"https://aws.amazon.com/what-is/machine-learning/\">https://aws.amazon.com/what-is/machine-learning/</a></p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Data preprocessing, Model evaluation, Model training, Data collection</strong> - Data collection should be the first step, not the last.</p>\n\n<p><strong>Model training, Data collection, Data preprocessing, Model evaluation</strong> - Data collection should precede model training.</p>\n\n<p><strong>Model evaluation, Model training, Data collection, Data preprocessing</strong> - Model evaluation should come after model training, not before data collection and preprocessing.</p>\n\n<p>References:</p>\n","answers":["<p>Data preprocessing, Model evaluation, Model training, Data collection</p>","<p>Model training, Data collection, Data preprocessing, Model evaluation</p>","<p>Data collection, Data preprocessing, Model training, Model evaluation</p>","<p>Model evaluation, Model training, Data collection, Data preprocessing</p>"]},"correct_response":["c"],"section":"Fundamentals of AI and ML","question_plain":"A healthcare company is implementing a machine learning solution to predict patient outcomes and improve treatment plans. The data science team is working to structure their workflow effectively, ensuring that they follow the correct steps in the machine learning process. Understanding the proper sequence of these steps will help the team streamline their project and ensure a successful implementation.\n\nGiven this context, which of the following would you recommend as the correct sequence of steps in the machine learning process?","related_lectures":[]},{"_class":"assessment","id":95107845,"assessment_type":"multiple-choice","prompt":{"question":"<p>Which of the following best describes the Amazon SageMaker Canvas ML tool?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>Gives the ability to use machine learning to generate predictions without the need to write any code</strong></p>\n\n<p>Amazon SageMaker Canvas gives you the ability to use machine learning to generate predictions without needing to write any code. With Canvas, you can chat with popular large language models (LLMs), access Ready-to-use models, or build a custom model trained on your data.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>Provides one-click, end-to-end solutions for many common machine learning use cases</strong> - Amazon SageMaker JumpStart supports this feature.</p>\n\n<p><strong>Explains how input features contribute to the model predictions during model development and inference</strong> - Amazon SageMaker Clarify supports this feature.</p>\n\n<p><strong>The fastest and easiest way to prepare tabular and image data for machine learning</strong> - Amazon SageMaker Data Wrangler supports this feature.</p>\n\n<p>Reference:</p>\n\n<p><a href=\"https://docs.aws.amazon.com/sagemaker/latest/dg/canvas.html\">https://docs.aws.amazon.com/sagemaker/latest/dg/canvas.html</a></p>\n","answers":["<p>Gives the ability to use machine learning to generate predictions without the need to write any code</p>","<p>Provides one-click, end-to-end solutions for many common machine learning use cases</p>","<p>Explains how input features contribute to the model predictions during model development and inference</p>","<p>The fastest and easiest way to prepare tabular and image data for machine learning</p>"]},"correct_response":["a"],"section":"Applications of Foundation Models","question_plain":"Which of the following best describes the Amazon SageMaker Canvas ML tool?","related_lectures":[]},{"_class":"assessment","id":95107843,"assessment_type":"multiple-choice","prompt":{"question":"<p>A healthcare company has deployed a machine learning model using Amazon SageMaker to predict patient health outcomes based on various clinical parameters. A data analyst at the company inputs new patient data, such as age, blood pressure, and cholesterol levels, into the SageMaker model to receive a prediction on the likelihood of a cardiovascular event. The analyst needs to understand the specific term for this process, where the trained model uses its learned patterns to provide a prediction or output based on new input data.</p>\n\n<p>What is this term called?</p>\n","relatedLectureIds":"","feedbacks":["","","",""],"explanation":"<p>Correct option:</p>\n\n<p><strong>This process is called inference, where the model uses its trained parameters to generate a prediction or output based on new input data provided by the user</strong></p>\n\n<p>Inference is the correct term for this process. It refers to the stage where a trained machine learning model is deployed to make predictions or generate outputs based on new input data. During inference, the model uses the patterns and relationships it learned during training to provide accurate and meaningful results. In this scenario, the user sends input data to the SageMaker model, which then performs inference to generate the corresponding output or prediction.</p>\n\n<p>Incorrect options:</p>\n\n<p><strong>This process is known as training, which involves using labeled data to adjust the model's parameters so it can generate a prediction or output based on new input data provided by the user</strong> - Training is the process of teaching a machine learning model to recognize patterns by adjusting its internal parameters based on a labeled dataset. During training, the model learns from data by minimizing errors and improving accuracy. However, the scenario described does not involve modifying the model’s parameters; it only involves using the trained model to make predictions, making \"training\" an incorrect choice.</p>\n\n<p><strong>This process is referred to as validation, here the model uses its trained parameters to generate a prediction or output based on new input data provided by the user</strong> - Validation is a step used to evaluate and fine-tune the model during the training process by checking its performance on a validation dataset, which is separate from the training dataset. The purpose is to optimize the model's hyperparameters and prevent overfitting. Since the scenario involves using the model to predict outcomes from new input data, rather than evaluating or fine-tuning it, \"validation\" is not the correct term.</p>\n\n<p><strong>This process is called testing, which involves assessing the model's final performance on an unseen dataset after training is complete to estimate its generalization ability to predict an output</strong> - Testing is the final evaluation phase of a model, where its performance is assessed on an unseen test dataset after the training and validation phases are complete. It provides an unbiased estimate of the model’s generalization ability to new data. However, in the given scenario, the focus is on generating predictions from a model already trained, rather than testing its performance, so \"testing\" is not the correct answer.</p>\n\n<p>References:</p>\n\n<p><a href=\"https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html\">https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model.html</a></p>\n\n<p><a href=\"https://aws.amazon.com/blogs/machine-learning/create-train-test-and-validation-splits-on-your-data-for-machine-learning-with-amazon-sagemaker-data-wrangler/\">https://aws.amazon.com/blogs/machine-learning/create-train-test-and-validation-splits-on-your-data-for-machine-learning-with-amazon-sagemaker-data-wrangler/</a></p>\n","answers":["<p>This process is known as training, which involves using labeled data to adjust the model's parameters so it can generate a prediction or output based on new input data provided by the user</p>","<p>This process is called inference, where the model uses its trained parameters to generate a prediction or output based on new input data provided by the user</p>","<p>This process is referred to as validation, here the model uses its trained parameters to generate a prediction or output based on new input data provided by the user</p>","<p>This process is called testing, which involves assessing the model's final performance on an unseen dataset after training is complete to estimate its generalization ability to predict an output</p>"]},"correct_response":["b"],"section":"Fundamentals of AI and ML","question_plain":"A healthcare company has deployed a machine learning model using Amazon SageMaker to predict patient health outcomes based on various clinical parameters. A data analyst at the company inputs new patient data, such as age, blood pressure, and cholesterol levels, into the SageMaker model to receive a prediction on the likelihood of a cardiovascular event. The analyst needs to understand the specific term for this process, where the trained model uses its learned patterns to provide a prediction or output based on new input data.\n\nWhat is this term called?","related_lectures":[]}]};
+      let correct = new Set();
+      let incorrect = new Set();
+      let totalNumberOfQuestions = 0;
+      const quizTitle = quizData.quiz_title;
+      const quizDescription = quizData.quiz_description;
+      const questionData = quizData.questions;
+      const passPercent = quizData.pass_percent;
+      const modalTextElement = document.getElementById('modal-text');
+      const quizContainerElement = document.getElementById('quiz-container');
+
+      const dialog = document.querySelector('dialog');
+      const showButton = document.getElementById('view-explanatin');
+      const closeButton = document.getElementById('close-modal-btn');
+      const quizTitleElement = document.getElementById('quiz-title');
+      const quizDescriptionElement = document.getElementById('quiz-description');
+
+      function main() {
+        // update quiz meta data
+        document.title = quizTitle;
+        quizTitleElement.innerHTML = quizTitle;
+        quizDescriptionElement.innerHTML = quizDescription;
+
+        const passPercentElement = document.getElementById('pass-percent');
+        passPercentElement.innerHTML = passPercent + '%';
+        totalNumberOfQuestions = questionData.length;
+        // shuffle the questionData to randomize the order of the questions
+        for (let i = questionData.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [questionData[i], questionData[j]] = [questionData[j], questionData[i]];
+        }
+
+        let formattedQuestions = questionData.map(formatSingleQuestionData);
+        updateScore();
+        // display the formattedQuestions
+        formattedQuestions.forEach((question, idx) => {
+          renderSingleQuestion(question, idx + 1);
+        });
+      }
+
+      /**
+       * Formats the question data from the given QuizData object.
+       *
+       * @param {Object} singleQuizData - The singleQuizData object containing prompt and correct_response.
+       * @return {Object} The formatted question object with the following properties:
+       *   - id: The ID of the question.
+       *   - question: The text of the question.
+       *   - answers: The array of answer options.
+       *   - correctAnswer: The text of the correct answer.
+       *   - explanation: The explanation of the correct answer.
+       */
+      function formatSingleQuestionData(singleQuizData = null) {
+        const { prompt, correct_response, id } = singleQuizData;
+        const questionText = prompt.question;
+        const answers = prompt.answers;
+        const correctAnswer = correct_response[0];
+        const correctAnswerText = answers[correctAnswer.toLowerCase().charCodeAt(0) - 97];
+        const questionObj = {
+          id: id,
+          question: questionText,
+          answers: answers,
+          correctAnswer,
+          explanation: prompt?.explanation || '',
+        };
+        return questionObj;
+      }
+
+      /**
+       * Renders a single question with its options and submit button.
+       *
+       * @param {Object} singleQuestionData - The data of the question to render.
+       * @param {number} rootIndex - The index of the question in the quiz.
+       * @return {void} return nothing.
+       */
+
+      const renderSingleQuestion = (singleQuestionData = {}, rootIndex = 1) => {
+        const { id, explanation, answers, correctAnswer, question } = singleQuestionData;
+        // shuffle the answers to randomize the order of the answers
+        // for (let i = answers.length - 1; i > 0; i--) {
+        //   const j = Math.floor(Math.random() * (i + 1));
+        //   [answers[i], answers[j]] = [answers[j], answers[i]];
+        // }
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        const optionsHTML = answers
+          .map((option, index) => {
+            const optionId = `${id}_${index}`;
+
+            return `
+        <div class="question-lable">
+          <input type="radio" id="${optionId}" name="${'answer'}" value="${alphabet[index]}" />
+          <label for="${optionId}">${option}</label>
+        </div>
+      `;
+          })
+
+          .join('');
+
+        const container = document.createElement('div');
+        container.innerHTML = `
+        <form data-correct-answer="${correctAnswer}" data-question-id="${id}" class="single-question-container" onsubmit="submitButtonListener(event)">
+          <div style="display: flex;justify-content: space-between;">
+            <p style="font-weight: 600">Question ${rootIndex}:</p>
+            <button type="button" onclick="renderExplanation(event)" id="${`explanation-${id}`}" data-explanation="${'tt'}" data-explanation-id=${id} class="explanation-btn">View Explanation</button>
+          </div>
+          <p style="margin-bottom: 8px;line-height: 1.5">${question}</p>
+          <div class="options-container">
+            ${optionsHTML}
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="submit" id="submit-button" class="button">Submit</button>
+          </div>
+        </form>
+      `;
+        quizContainerElement.appendChild(container);
+      };
+
+      /**
+       * Updates the score on the page based on the number of correct and incorrect answers.
+       *
+       * @return {void} This function does not return a value.
+       */
+      function updateScore() {
+        const currentParcentageElement = document.getElementById('current-score');
+        const correctAnswerElement = document.getElementById('correct-answers');
+        const wrongAnswerElement = document.getElementById('wrong-answers');
+        correctAnswerElement.innerHTML = correct.size;
+        wrongAnswerElement.innerHTML = incorrect.size;
+        const score = Number((correct.size / totalNumberOfQuestions) * 100).toFixed(2);
+        currentParcentageElement.innerHTML = score;
+      }
+
+      /**
+       * Handles the event when the submit button is clicked.
+       *
+       * @param {Event} e - The event object.
+       * @return {void} This function does not return anything.
+       */
+      const submitButtonListener = e => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const form = e.target;
+        const selectedOption = e.target.querySelector('input[type="radio"]:checked');
+        if (!selectedOption) {
+          alert('Please select an answer!');
+          return;
+        }
+
+        let isCorrect = false;
+        const { answer: userAnswer } = Object.fromEntries(formData.entries());
+        const correctAnswer = e.target.dataset.correctAnswer;
+        const questionId = e.target.dataset.questionId;
+        if (userAnswer == correctAnswer) {
+          correct.add(questionId);
+          incorrect.delete(questionId);
+          isCorrect = true;
+        } else {
+          incorrect.add(e.target.dataset.questionId);
+          correct.delete(questionId);
+        }
+        updateScore();
+
+        const resultClass = isCorrect ? 'correct-answer' : 'incorrect-answer';
+
+        form.querySelectorAll('.question-lable').forEach(label => {
+          label.classList.remove('correct-answer', 'incorrect-answer');
+        });
+        selectedOption.closest('.question-lable').classList.add(resultClass);
+      };
+
+      function renderExplanation(ev) {
+        const dataid = ev.target.dataset.explanationId;
+        const quiz = quizData.questions.find(q => q.id === Number(dataid));
+        modalTextElement.innerHTML =
+          quiz && quiz.prompt.explanation ? quiz.prompt.explanation : 'no explanation found';
+        // modalTextElement.innerHTML = ev.target.dataset?.explanation || 'no explanation found';
+        dialog.showModal();
+        dialog.addEventListener('click', event => {
+          if (event.target === dialog) {
+            dialog.close();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
